@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using IMDb_Chatbot.Interfaces;
+using Microsoft.Bot.Builder.Dialogs.Choices;
 
 namespace IMDb_Chatbot.Dialogs
 {
@@ -16,16 +18,31 @@ namespace IMDb_Chatbot.Dialogs
     {
         private readonly FlightBookingRecognizer _luisRecognizer;
         protected readonly ILogger Logger;
+        private IImdbService _imdbService;
 
         // Dependency injection uses this constructor to instantiate MainDialog
-        public MainDialog(FlightBookingRecognizer luisRecognizer, BookingDialog bookingDialog, ILogger<MainDialog> logger)
+        public MainDialog(
+            FlightBookingRecognizer luisRecognizer, 
+            BookingDialog bookingDialog,
+            TopRatedMoviesDialog topRatedMoviesDialog,
+            TopRatedActorsDialog topRatedActorsDialog,
+            ComingSoonMoviesDialog comingSoonMoviesDialog,
+            MovieRouletteDialog movieRouletteDialog,
+            ILogger<MainDialog> logger,
+            IImdbService imdbService)
             : base(nameof(MainDialog))
         {
             _luisRecognizer = luisRecognizer;
             Logger = logger;
+            _imdbService = imdbService;
 
             AddDialog(new TextPrompt(nameof(TextPrompt)));
+            AddDialog(new ChoicePrompt(nameof(ChoicePrompt)));
             AddDialog(bookingDialog);
+            AddDialog(topRatedMoviesDialog);
+            //AddDialog(topRatedActorsDialog);
+            //AddDialog(comingSoonMoviesDialog);
+            //AddDialog(movieRouletteDialog);
             AddDialog(new WaterfallDialog(nameof(WaterfallDialog), new WaterfallStep[]
             {
                 IntroStepAsync,
@@ -39,14 +56,6 @@ namespace IMDb_Chatbot.Dialogs
 
         private async Task<DialogTurnResult> IntroStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            if (!_luisRecognizer.IsConfigured)
-            {
-                await stepContext.Context.SendActivityAsync(
-                    MessageFactory.Text("NOTE: LUIS is not configured. To enable all capabilities, add 'LuisAppId', 'LuisAPIKey' and 'LuisAPIHostName' to the appsettings.json file.", inputHint: InputHints.IgnoringInput), cancellationToken);
-
-                return await stepContext.NextAsync(null, cancellationToken);
-            }
-
             // Use the text provided in FinalStepAsync or the default if it is the first time.
             var messageText = stepContext.Options?.ToString() ?? "What can I help you with today?\nSay something like \"Book a flight from Paris to Berlin on March 22, 2020\"";
             var promptMessage = MessageFactory.Text(messageText, messageText, InputHints.ExpectingInput);
@@ -55,6 +64,29 @@ namespace IMDb_Chatbot.Dialogs
 
         private async Task<DialogTurnResult> ActStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
+
+            //if (stepContext.Result is not null)
+            if (stepContext.Result is not null)
+            {
+                switch (stepContext.Result)
+                {
+                    case "Top rated movies":
+                        return await stepContext.BeginDialogAsync(nameof(TopRatedMoviesDialog), new TopRatedMoviesDialog(_imdbService), cancellationToken);
+
+                    case "Top rated actors":
+                        //return await stepContext.BeginDialogAsync(nameof(topRatedActorsDialog), new TopRatedActorsDialog(_imdbService), cancellationToken);
+                        break;
+                    case "Coming soon movies":
+                        //return await stepContext.BeginDialogAsync(nameof(comingSoonMoviesDialog), new ComingSoonMoviesDialog(_imdbService), cancellationToken);
+                        break;
+                    case "IMDb Roulette":
+                        //return await stepContext.BeginDialogAsync(nameof(movieRouletteDialog), new MovieRouletteDialog(_imdbService), cancellationToken);
+                        break;
+                }
+            }
+
+
+
             if (!_luisRecognizer.IsConfigured)
             {
                 // LUIS is not configured, we just run the BookingDialog path with an empty BookingDetailsInstance.

@@ -5,6 +5,8 @@
 
 using IMDb_Chatbot.Bots;
 using IMDb_Chatbot.Dialogs;
+using IMDb_Chatbot.Interfaces;
+using IMDb_Chatbot.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Bot.Builder;
@@ -44,6 +46,16 @@ namespace IMDb_Chatbot
 
             // Create the bot as a transient. In this case the ASP Controller is expecting an IBot.
             services.AddTransient<IBot, DialogAndWelcomeBot<MainDialog>>();
+
+            // Create IMDb service
+            services.AddSingleton<IImdbService, ImdbService>();
+
+            // Create Dialogs
+            services.AddSingleton<TopRatedMoviesDialog>();
+            services.AddSingleton<TopRatedActorsDialog>();
+            services.AddSingleton<ComingSoonMoviesDialog>();
+            services.AddSingleton<MovieRouletteDialog>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
