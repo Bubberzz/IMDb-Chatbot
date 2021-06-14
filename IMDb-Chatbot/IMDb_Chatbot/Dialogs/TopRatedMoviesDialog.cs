@@ -22,49 +22,85 @@ namespace IMDb_Chatbot.Dialogs
             AddDialog(new ConfirmPrompt(nameof(ConfirmPrompt)));
             AddDialog(new WaterfallDialog(nameof(WaterfallDialog), new WaterfallStep[]
             {
-                MoviesList,
+                GetMoviesList,
+                ShowMoreResults
             }));
 
-            // The initial child Dialog to run.
             InitialDialogId = nameof(WaterfallDialog);
-
             _imdbService = imdbService;
         }
 
-        private async Task<DialogTurnResult> MoviesList(WaterfallStepContext stepContext,
-            CancellationToken cancellationToken)
+        private async Task<DialogTurnResult> GetMoviesList(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
+            // Check of this is a first request or a request to see more results from the list
+            if (stepContext.Context.Activity.Value is not null and "Show More: Top rated movies")
+            {
+                return await stepContext.NextAsync(null, cancellationToken);
+            }
+
+            // Display loading message
             await stepContext.Context.SendActivityAsync(MessageFactory.Text("Loading.."), cancellationToken);
 
+            // Call IMDb service and save into model
             ImdbResult.TopRatedMovies = await _imdbService.GetTopRatedMovies();
 
-            var firstBatch = new List<CardsBot.Models.TopRatedMovies.Root>();
+            var movieList = new List<TopRatedMovies.Root>();
 
             for (var i = 0; i < 10; i++)
             {
-                firstBatch.Add(ImdbResult.TopRatedMovies[i]);
+                movieList.Add(ImdbResult.TopRatedMovies[i]);
             }
 
-            Counter.MinCount = 0;
-            Counter.MaxCount = 10;
-
-            var reply = MessageFactory.Attachment(new List<Attachment>());
-            var cardsClass = new Cards(_imdbService).CreateTopRatedMovieCardAsync(firstBatch, false);
-            //var cards = Cards.CreateTopRatedFilmCard(result);
-            reply.Attachments.Add(cardsClass.Result.ToAttachment());
-
-
-            Counter.MinCount += 10;
-            Counter.MaxCount += 10;
-
-            // break;
+            // Update the movie counter - allows show more results to display next 10 in the list
+            Counter.MinCount = 10;
+            Counter.MaxCount = 20;
+            
+            var card = new Cards(_imdbService).CreateTopRatedMovieCardAsync(movieList, false);
+            var reply = MessageFactory.Attachment(new List<Attachment>()
+            {
+                card.Result.ToAttachment()
+            });
+            
             // Send the card(s) to the user as an attachment to the activity
             await stepContext.Context.SendActivityAsync(reply, cancellationToken);
-            // Give the user instructions about what to do next
-            await stepContext.Context.SendActivityAsync(
-                MessageFactory.Text("Type anything to do another search or type 'Options'"), cancellationToken);
-            return await stepContext.EndDialogAsync(cancellationToken: cancellationToken);
+            return await stepContext.NextAsync(null, cancellationToken);
+        }
 
+        private async Task<DialogTurnResult> ShowMoreResults(WaterfallStepContext stepContext,
+            CancellationToken cancellationToken)
+        {
+            if (stepContext.Context.Activity.Value is not (not null and "Show More: Top rated movies"))
+                return await stepContext.NextAsync(null, cancellationToken);
+            var moviesList = new List<TopRatedMovies.Root>();
+            var reply = MessageFactory.Attachment(new List<Attachment>());
+
+            for (var i = Counter.MinCount; i < Counter.MaxCount; i++)
+            {
+                moviesList.Add(ImdbResult.TopRatedMovies[i]);
+            }
+            
+            if (Counter.MinCount >= 100)
+            {
+                await stepContext.Context.SendActivityAsync(MessageFactory.Text("Loading.."),
+                    cancellationToken);
+                var card = new Cards(_imdbService).CreateTopRatedMovieCardAsync(moviesList, true);
+                reply.Attachments.Add(card.Result.ToAttachment());
+                Counter.MinCount = 0;
+                Counter.MaxCount = 10;
+            }
+            else
+            {
+                await stepContext.Context.SendActivityAsync(MessageFactory.Text("Loading.."),
+                    cancellationToken);
+                var card = new Cards(_imdbService).CreateTopRatedMovieCardAsync(moviesList, false);
+                reply.Attachments.Add(card.Result.ToAttachment());
+                Counter.MinCount += 10;
+                Counter.MaxCount += 10;
+            }
+
+            // Send the card(s) to the user as an attachment to the activity
+            await stepContext.Context.SendActivityAsync(reply, cancellationToken);
+            return await stepContext.NextAsync(null, cancellationToken);
         }
     }
 }

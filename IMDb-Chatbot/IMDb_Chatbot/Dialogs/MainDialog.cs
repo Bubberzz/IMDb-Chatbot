@@ -9,31 +9,36 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CardsBot.Models;
 using IMDb_Chatbot.Interfaces;
+using IMDb_Chatbot.Models;
 using Microsoft.Bot.Builder.Dialogs.Choices;
+using Microsoft.BotBuilderSamples;
 
 namespace IMDb_Chatbot.Dialogs
 {
     public class MainDialog : ComponentDialog
     {
-        private readonly FlightBookingRecognizer _luisRecognizer;
         protected readonly ILogger _logger;
         private IImdbService _imdbService;
+        private IImdbResult _imdbResult;
+
 
         // Dependency injection uses this constructor to instantiate MainDialog
         public MainDialog(
-            FlightBookingRecognizer luisRecognizer, 
-            Dialog topRatedMoviesDialog,
-            Dialog topRatedActorsDialog,
-            Dialog comingSoonMoviesDialog,
-            Dialog movieRouletteDialog,
+            FlightBookingRecognizer luisRecognizer,
+            TopRatedMoviesDialog topRatedMoviesDialog,
+            //Dialog topRatedActorsDialog,
+            //Dialog comingSoonMoviesDialog,
+            //Dialog movieRouletteDialog,
             ILogger<MainDialog> logger,
-            IImdbService imdbService)
+            IImdbService imdbService,
+            IImdbResult imdbResult)
             : base(nameof(MainDialog))
         {
-            _luisRecognizer = luisRecognizer;
             _logger = logger;
             _imdbService = imdbService;
+            _imdbResult = imdbResult;
 
             AddDialog(new TextPrompt(nameof(TextPrompt)));
             AddDialog(new ChoicePrompt(nameof(ChoicePrompt)));
@@ -68,18 +73,12 @@ namespace IMDb_Chatbot.Dialogs
                 return await stepContext.PromptAsync(nameof(ChoicePrompt), options, cancellationToken);
             }
 
-            _logger.LogInformation("MainDialog.ChoiceCardStepAsync");
+            _logger.LogInformation("MainDialog.SelectOptionAsync");
             return await stepContext.NextAsync(cancellationToken: cancellationToken);
         }
 
         private async Task<DialogTurnResult> ReturnResultCard(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            // Cards are sent as Attachments in the Bot Framework. Create a reply activity to return to the user.
-            var reply = MessageFactory.Attachment(new List<Attachment>());
-
-            // Store user's text input in a variable
-            var input = stepContext.Context.Activity.Text;
-
             if (stepContext.Result is not null)
             {
                 switch (((FoundChoice)stepContext.Result).Value)
@@ -88,7 +87,7 @@ namespace IMDb_Chatbot.Dialogs
                         return await stepContext.BeginDialogAsync(nameof(TopRatedMoviesDialog), new TopRatedMoviesDialog(_imdbService), cancellationToken);
 
                     case "Top rated actors":
-                        //return await stepContext.BeginDialogAsync(nameof(topRatedActorsDialog), new TopRatedActorsDialog(_imdbService), cancellationToken);
+                        //return await stepContext.BeginDialogAsync(nameof(TopRatedActorsDialog), new TopRatedActorsDialog(_imdbService), cancellationToken);
                         break;
                     case "Coming soon movies":
                         //return await stepContext.BeginDialogAsync(nameof(comingSoonMoviesDialog), new ComingSoonMoviesDialog(_imdbService), cancellationToken);
@@ -99,18 +98,33 @@ namespace IMDb_Chatbot.Dialogs
                 }
             }
 
-            // Send the card(s) to the user as an attachment to the activity
-            await stepContext.Context.SendActivityAsync(reply, cancellationToken);
+            // Create a response card based on activity received from user
+            switch (stepContext.Context.Activity.Value)
+            {
+                case not null and "Show More: Top rated movies":
+                    {
+                        return await stepContext.BeginDialogAsync(nameof(TopRatedMoviesDialog), new TopRatedMoviesDialog(_imdbService), cancellationToken);
+                    }
 
+                default:
+                    {
+                        //_imdbResult = await _getImdbResult.ImdbResult(input);
+
+                        //var cards = Cards.GetHeroCard((ImdbResult)_imdbResult, true, false);
+                        //reply.Attachments.Add(cards[0].ToAttachment());
+
+                        break;
+                    }
+            }
+
+            _logger.LogInformation("MainDialog.ReturnResultCard");
             return await stepContext.NextAsync(null, cancellationToken);
         }
 
         private async Task<DialogTurnResult> FinalStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-           
             // Give the user instructions about what to do next
-            await stepContext.Context.SendActivityAsync(
-                MessageFactory.Text("Type anything to do another search or type 'Options'"), cancellationToken);
+            await stepContext.Context.SendActivityAsync(MessageFactory.Text("Type anything to do another search or type 'Options'"), cancellationToken);
 
             return await stepContext.EndDialogAsync(cancellationToken: cancellationToken);
         }
