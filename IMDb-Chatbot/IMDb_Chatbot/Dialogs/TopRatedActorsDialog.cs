@@ -72,7 +72,7 @@ namespace IMDb_Chatbot.Dialogs
                 actorsList.Add(ImdbResult.TopRatedActors[i]);
             }
 
-            if (Counter.MinCount >= 80)
+            if (Counter.MaxCount >= 80)
             {
                 await stepContext.Context.SendActivityAsync(MessageFactory.Text("Loading.."),
                     cancellationToken);

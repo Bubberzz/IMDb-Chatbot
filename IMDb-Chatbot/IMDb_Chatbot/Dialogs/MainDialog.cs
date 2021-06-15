@@ -28,7 +28,7 @@ namespace IMDb_Chatbot.Dialogs
         public MainDialog(
             TopRatedMoviesDialog topRatedMoviesDialog,
             TopRatedActorsDialog topRatedActorsDialog,
-            //Dialog comingSoonMoviesDialog,
+            ComingSoonMoviesDialog comingSoonMoviesDialog,
             //Dialog movieRouletteDialog,
             ILogger<MainDialog> logger,
             IImdbService imdbService,
@@ -43,7 +43,7 @@ namespace IMDb_Chatbot.Dialogs
             AddDialog(new ChoicePrompt(nameof(ChoicePrompt)));
             AddDialog(topRatedMoviesDialog);
             AddDialog(topRatedActorsDialog);
-            //AddDialog(comingSoonMoviesDialog);
+            AddDialog(comingSoonMoviesDialog);
             //AddDialog(movieRouletteDialog);
             AddDialog(new WaterfallDialog(nameof(WaterfallDialog), new WaterfallStep[]
             {
@@ -92,8 +92,9 @@ namespace IMDb_Chatbot.Dialogs
                         return await stepContext.BeginDialogAsync(nameof(TopRatedActorsDialog),
                             new TopRatedActorsDialog(_imdbService), cancellationToken);
                     case "Coming soon movies":
-                        //return await stepContext.BeginDialogAsync(nameof(comingSoonMoviesDialog), new ComingSoonMoviesDialog(_imdbService), cancellationToken);
-                        break;
+                        return await stepContext.BeginDialogAsync(nameof(ComingSoonMoviesDialog),
+                            new ComingSoonMoviesDialog(_imdbService), cancellationToken);
+
                     case "IMDb Roulette":
                         //return await stepContext.BeginDialogAsync(nameof(movieRouletteDialog), new MovieRouletteDialog(_imdbService), cancellationToken);
                         break;
@@ -113,6 +114,12 @@ namespace IMDb_Chatbot.Dialogs
                 {
                     return await stepContext.BeginDialogAsync(nameof(TopRatedActorsDialog),
                         new TopRatedActorsDialog(_imdbService), cancellationToken);
+                }
+
+                case not null and "Show More: Coming Soon movies":
+                {
+                    return await stepContext.BeginDialogAsync(nameof(ComingSoonMoviesDialog),
+                        new ComingSoonMoviesDialog(_imdbService), cancellationToken);
                 }
 
                 default:
@@ -145,7 +152,8 @@ namespace IMDb_Chatbot.Dialogs
             var cardOptions = new List<Choice>()
             {
                 new Choice() {Value = "Top rated movies", Synonyms = new List<string>() {"rated movies"}},
-                new Choice() {Value = "Top rated actors", Synonyms = new List<string>() {"actor", "actors", "rated actors"}},
+                new Choice()
+                    {Value = "Top rated actors", Synonyms = new List<string>() {"actor", "actors", "rated actors"}},
                 new Choice() {Value = "Coming soon movies", Synonyms = new List<string>() {"coming", "soon"}},
                 new Choice() {Value = "IMDb Roulette", Synonyms = new List<string>() {"roulette", "imdb"}},
             };

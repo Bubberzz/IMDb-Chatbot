@@ -80,7 +80,7 @@ namespace IMDb_Chatbot.Dialogs
                 moviesList.Add(ImdbResult.TopRatedMovies[i]);
             }
             
-            if (Counter.MinCount >= 100)
+            if (Counter.MaxCount >= 100)
             {
                 await stepContext.Context.SendActivityAsync(MessageFactory.Text("Loading.."),
                     cancellationToken);
