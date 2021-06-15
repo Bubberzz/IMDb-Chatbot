@@ -14,6 +14,7 @@ namespace IMDb_Chatbot.Dialogs
     public class TopRatedMoviesDialog : CancelAndHelpDialog
     {
         private static IImdbService _imdbService;
+        private const string ShowMoreText = "Show More: Top rated movies";
 
         public TopRatedMoviesDialog(IImdbService imdbService)
             : base(nameof(TopRatedMoviesDialog))
@@ -33,7 +34,7 @@ namespace IMDb_Chatbot.Dialogs
         private async Task<DialogTurnResult> GetMoviesList(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             // Check of this is a first request or a request to see more results from the list
-            if (stepContext.Context.Activity.Value is not null and "Show More: Top rated movies")
+            if (stepContext.Context.Activity.Value is not null and ShowMoreText)
             {
                 return await stepContext.NextAsync(null, cancellationToken);
             }
@@ -69,7 +70,7 @@ namespace IMDb_Chatbot.Dialogs
         private async Task<DialogTurnResult> ShowMoreResults(WaterfallStepContext stepContext,
             CancellationToken cancellationToken)
         {
-            if (stepContext.Context.Activity.Value is not (not null and "Show More: Top rated movies"))
+            if (stepContext.Context.Activity.Value is not (not null and ShowMoreText))
                 return await stepContext.NextAsync(null, cancellationToken);
             var moviesList = new List<TopRatedMovies.Root>();
             var reply = MessageFactory.Attachment(new List<Attachment>());
@@ -85,8 +86,6 @@ namespace IMDb_Chatbot.Dialogs
                     cancellationToken);
                 var card = new Cards(_imdbService).CreateTopRatedMovieCardAsync(moviesList, true);
                 reply.Attachments.Add(card.Result.ToAttachment());
-                Counter.MinCount = 0;
-                Counter.MaxCount = 10;
             }
             else
             {

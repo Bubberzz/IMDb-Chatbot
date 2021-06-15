@@ -36,23 +36,16 @@ namespace IMDb_Chatbot
             // Create the Conversation state. (Used by the Dialog system itself.)
             services.AddSingleton<ConversationState>();
 
-            // Register LUIS recognizer
-            services.AddSingleton<FlightBookingRecognizer>();
-
-            // Register the BookingDialog.
-            services.AddSingleton<BookingDialog>();
-
             // The MainDialog that will be run by the bot.
             services.AddSingleton<MainDialog>();
 
             // Create the bot as a transient. In this case the ASP Controller is expecting an IBot.
             services.AddTransient<IBot, DialogAndWelcomeBot<MainDialog>>();
 
-
             // Create IMDb service
             services.AddSingleton<IImdbService, ImdbService>();
 
-            // Create Dialogs
+            // Register Dialogs
             services.AddSingleton<TopRatedMoviesDialog>();
             services.AddSingleton<TopRatedActorsDialog>();
             services.AddSingleton<ComingSoonMoviesDialog>();

@@ -26,9 +26,8 @@ namespace IMDb_Chatbot.Dialogs
 
         // Dependency injection uses this constructor to instantiate MainDialog
         public MainDialog(
-            FlightBookingRecognizer luisRecognizer,
             TopRatedMoviesDialog topRatedMoviesDialog,
-            //Dialog topRatedActorsDialog,
+            TopRatedActorsDialog topRatedActorsDialog,
             //Dialog comingSoonMoviesDialog,
             //Dialog movieRouletteDialog,
             ILogger<MainDialog> logger,
@@ -43,7 +42,7 @@ namespace IMDb_Chatbot.Dialogs
             AddDialog(new TextPrompt(nameof(TextPrompt)));
             AddDialog(new ChoicePrompt(nameof(ChoicePrompt)));
             AddDialog(topRatedMoviesDialog);
-            //AddDialog(topRatedActorsDialog);
+            AddDialog(topRatedActorsDialog);
             //AddDialog(comingSoonMoviesDialog);
             //AddDialog(movieRouletteDialog);
             AddDialog(new WaterfallDialog(nameof(WaterfallDialog), new WaterfallStep[]
@@ -57,7 +56,8 @@ namespace IMDb_Chatbot.Dialogs
             InitialDialogId = nameof(WaterfallDialog);
         }
 
-        private async Task<DialogTurnResult> SelectOptionAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        private async Task<DialogTurnResult> SelectOptionAsync(WaterfallStepContext stepContext,
+            CancellationToken cancellationToken)
         {
             if (stepContext.Context.Activity.Text == "Options")
             {
@@ -77,18 +77,20 @@ namespace IMDb_Chatbot.Dialogs
             return await stepContext.NextAsync(cancellationToken: cancellationToken);
         }
 
-        private async Task<DialogTurnResult> ReturnResultCard(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        private async Task<DialogTurnResult> ReturnResultCard(WaterfallStepContext stepContext,
+            CancellationToken cancellationToken)
         {
             if (stepContext.Result is not null)
             {
-                switch (((FoundChoice)stepContext.Result).Value)
+                switch (((FoundChoice) stepContext.Result).Value)
                 {
                     case "Top rated movies":
-                        return await stepContext.BeginDialogAsync(nameof(TopRatedMoviesDialog), new TopRatedMoviesDialog(_imdbService), cancellationToken);
+                        return await stepContext.BeginDialogAsync(nameof(TopRatedMoviesDialog),
+                            new TopRatedMoviesDialog(_imdbService), cancellationToken);
 
                     case "Top rated actors":
-                        //return await stepContext.BeginDialogAsync(nameof(TopRatedActorsDialog), new TopRatedActorsDialog(_imdbService), cancellationToken);
-                        break;
+                        return await stepContext.BeginDialogAsync(nameof(TopRatedActorsDialog),
+                            new TopRatedActorsDialog(_imdbService), cancellationToken);
                     case "Coming soon movies":
                         //return await stepContext.BeginDialogAsync(nameof(comingSoonMoviesDialog), new ComingSoonMoviesDialog(_imdbService), cancellationToken);
                         break;
@@ -102,29 +104,38 @@ namespace IMDb_Chatbot.Dialogs
             switch (stepContext.Context.Activity.Value)
             {
                 case not null and "Show More: Top rated movies":
-                    {
-                        return await stepContext.BeginDialogAsync(nameof(TopRatedMoviesDialog), new TopRatedMoviesDialog(_imdbService), cancellationToken);
-                    }
+                {
+                    return await stepContext.BeginDialogAsync(nameof(TopRatedMoviesDialog),
+                        new TopRatedMoviesDialog(_imdbService), cancellationToken);
+                }
+
+                case not null and "Show More: Top rated actors":
+                {
+                    return await stepContext.BeginDialogAsync(nameof(TopRatedActorsDialog),
+                        new TopRatedActorsDialog(_imdbService), cancellationToken);
+                }
 
                 default:
-                    {
-                        //_imdbResult = await _getImdbResult.ImdbResult(input);
+                {
+                    //_imdbResult = await _getImdbResult.ImdbResult(input);
 
-                        //var cards = Cards.GetHeroCard((ImdbResult)_imdbResult, true, false);
-                        //reply.Attachments.Add(cards[0].ToAttachment());
+                    //var cards = Cards.GetHeroCard((ImdbResult)_imdbResult, true, false);
+                    //reply.Attachments.Add(cards[0].ToAttachment());
 
-                        break;
-                    }
+                    break;
+                }
             }
 
             _logger.LogInformation("MainDialog.ReturnResultCard");
             return await stepContext.NextAsync(null, cancellationToken);
         }
 
-        private async Task<DialogTurnResult> FinalStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        private async Task<DialogTurnResult> FinalStepAsync(WaterfallStepContext stepContext,
+            CancellationToken cancellationToken)
         {
             // Give the user instructions about what to do next
-            await stepContext.Context.SendActivityAsync(MessageFactory.Text("Type anything to do another search or type 'Options'"), cancellationToken);
+            await stepContext.Context.SendActivityAsync(
+                MessageFactory.Text("Type anything to do another search or type 'Options'"), cancellationToken);
 
             return await stepContext.EndDialogAsync(cancellationToken: cancellationToken);
         }
