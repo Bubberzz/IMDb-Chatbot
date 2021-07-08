@@ -1,79 +1,64 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
-
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using IMDb_Chatbot.Interfaces;
-using CardsBot.Models;
-using CardsBot.Services;
-using IMDb_Chatbot.Interfaces;
 using IMDb_Chatbot.Models;
 using Microsoft.Bot.Schema;
-using Newtonsoft.Json;
 
-namespace Microsoft.BotBuilderSamples
+namespace IMDb_Chatbot.Services
 {
     public class Cards
     {
         private IImdbService _imdbService;
+        private StringBuilder _stringBuilder;
         public Cards(IImdbService imdbService)
         {
             _imdbService = imdbService;
+            _stringBuilder = new StringBuilder();
         }
 
-        // Get hero card, title: movie, name: actor
-        public static List<HeroCard> GetHeroCard(ImdbResult response, bool showMoreResults, bool showTryAgainButton)
+        public static List<HeroCard> GetCard(ImdbSearch.Root response, bool showMoreResults, bool showTryAgainButton)
         {
             var result = new List<HeroCard>();
 
-            for (var i = 0; i < response.ImdbSearchResult.results.Count; i++)
+            for (var i = 0; i < response.results.Count; i++)
             {
-                if (response.ImdbSearchResult.results[i].id.StartsWith("/title"))
+                if (response.results[i].id.StartsWith("/title"))
                 {
                     switch (showMoreResults)
                     {
                         case true:
-                            result.Add(CreateFilmHeroCards(response, i, true, showTryAgainButton));
+                            result.Add(CreateFilmCard(response, i, true, showTryAgainButton));
                             break;
                         case false:
-                            result.Add(CreateFilmHeroCards(response, i, false, showTryAgainButton));
+                            result.Add(CreateFilmCard(response, i, false, showTryAgainButton));
                             break;
                     }
                 }
-
-                if (response.ImdbSearchResult.results[i].id.StartsWith("/name"))
+                if (response.results[i].id.StartsWith("/name"))
                 {
-                    result.Add(CreateActorHeroCards(response, i));
+                    result.Add(CreateActorCard(response, i));
                 }
             }
-
             return result;
         }
 
-        public async Task<HeroCard> CreateTopRatedMovieCardAsync(List<CardsBot.Models.TopRatedMovies.Root> list, bool final)
+        public async Task<HeroCard> CreateTopRatedMovieCardAsync(List<TopRatedMovies.Root> list, bool isFinalCard)
         {
+            _stringBuilder = new StringBuilder();
 
-            var myStringBuilder = new StringBuilder();
-
-            if (final is false)
+            if (isFinalCard is false)
             {
-                for (int i = 0; i < 10; i++)
+                for (var i = 0; i < 10; i++)
                 {
-                    var extractId = list[i].id.Split("/");
-                    var resultId = extractId[2];
+                    var resultId = ExtractResultId.GetId(list, i);
                     var film = await _imdbService.AutoComplete(resultId);
-                    myStringBuilder.Append($"Rating: {list[i].chartRating} - {film.d[0].l}");
-                    myStringBuilder.AppendLine();
+                    _stringBuilder.Append($"Rating: {list[i].chartRating} - {film.d[0].l}");
+                    _stringBuilder.AppendLine();
                 }
-
-
                 var heroCard = new HeroCard
                 {
-                    Text = myStringBuilder.ToString(),
+                    Text = _stringBuilder.ToString(),
                     Buttons = new List<CardAction>
                     {
                         new(ActionTypes.MessageBack, "More Results",
@@ -84,44 +69,37 @@ namespace Microsoft.BotBuilderSamples
             }
             else
             {
-                for (int i = 0; i < 10; i++)
+                for (var i = 0; i < 10; i++)
                 {
-                    var extractId = list[i].id.Split("/");
-                    var resultId = extractId[2];
+                    var resultId = ExtractResultId.GetId(list, i);
                     var film = await _imdbService.AutoComplete(resultId);
-                    myStringBuilder.Append($"Rating: {list[i].chartRating} - {film.d[0].l}");
-                    myStringBuilder.AppendLine();
-
+                    _stringBuilder.Append($"Rating: {list[i].chartRating} - {film.d[0].l}");
+                    _stringBuilder.AppendLine();
                 }
-
                 var heroCard = new HeroCard
                 {
-                    Text = myStringBuilder.ToString(),
+                    Text = _stringBuilder.ToString(),
                 };
                 return heroCard;
             }
-           
         }
 
-        public async Task<HeroCard> CreateTopRatedActorCardAsync(List<CardsBot.Models.TopRatedActors.Root> list, bool final)
+        public async Task<HeroCard> CreateTopRatedActorCardAsync(List<TopRatedActors.Root> list, bool isFinalCard)
         {
+            _stringBuilder = new StringBuilder();
 
-            StringBuilder myStringBuilder = new StringBuilder();
-
-            if (final is false)
+            if (isFinalCard is false)
             {
-                for (int i = 0; i < 10; i++)
+                for (var i = 0; i < 10; i++)
                 {
-                    var extractId = list[i].id.Split("/");
-                    var resultId = extractId[2];
+                    var resultId = ExtractResultId.GetId(list, i);
                     var actor = await _imdbService.AutoComplete(resultId);
-                    myStringBuilder.Append($"Rank: {list[i].chartRating} - {actor.d[0].l}");
-                    myStringBuilder.AppendLine();
+                    _stringBuilder.Append($"Rank: {list[i].chartRating} - {actor.d[0].l}");
+                    _stringBuilder.AppendLine();
                 }
-
                 var heroCard = new HeroCard
                 {
-                    Text = myStringBuilder.ToString(),
+                    Text = _stringBuilder.ToString(),
                     Buttons = new List<CardAction>
                     {
                         new(ActionTypes.MessageBack, "More Results",
@@ -132,28 +110,23 @@ namespace Microsoft.BotBuilderSamples
             }
             else
             {
-                for (int i = 0; i < 10; i++)
+                for (var i = 0; i < 10; i++)
                 {
-                    var extractId = list[i].id.Split("/");
-                    var resultId = extractId[2];
+                    var resultId = ExtractResultId.GetId(list, i);
                     var actor = await _imdbService.AutoComplete(resultId);
-                    myStringBuilder.Append($"Rank: {list[i].chartRating} - {actor.d[0].l}");
-                    myStringBuilder.AppendLine();
+                    _stringBuilder.Append($"Rank: {list[i].chartRating} - {actor.d[0].l}");
+                    _stringBuilder.AppendLine();
 
                 }
-                var movies = "";
-
                 var heroCard = new HeroCard
                 {
-                    Text = myStringBuilder.ToString(),
+                    Text = _stringBuilder.ToString(),
                 };
                 return heroCard;
             }
-
         }
 
-
-        private static HeroCard CreateFilmHeroCards(ImdbResult response, int i, bool showMoreResultsButton, bool showTryAgainButton)
+        private static HeroCard CreateFilmCard(ImdbSearch.Root response, int i, bool showMoreResultsButton, bool showTryAgainButton)
         {
             // Set default values in case the API doesn't return a value
             var title = "Unknown";
@@ -164,7 +137,7 @@ namespace Microsoft.BotBuilderSamples
             var minutes = "Unknown";
             var type = "Unknown";
             var imageUrl =
-                "https://www.publicdomainpictures.net/pictures/280000/velka/not-found-image-15383864787lu.jpg";
+                "https://raw.githubusercontent.com/Bubberzz/IMDb-Chatbot/main/Images/not-found.jpg";
             var filmId = "tt013";
             var genre = "Unknown";
 
@@ -184,7 +157,7 @@ namespace Microsoft.BotBuilderSamples
             // If multiple films are returned, then include a show more results button
             if (showMoreResultsButton)
             {
-                // Card that can show more search results
+                // Card that displays show more search results
                 var heroCardShowMoreResults = new HeroCard
                 {
                     Title = title,
@@ -196,7 +169,7 @@ namespace Microsoft.BotBuilderSamples
                         "Genre: " + genre + " | " +
                         "Minutes: " + minutes + " | " +
                         "Type: " + type,
-                    Images = new List<CardImage> { new CardImage(imageUrl) },
+                    Images = new List<CardImage> { new(imageUrl) },
                     Buttons = new List<CardAction>
                     {
                         new(ActionTypes.OpenUrl, "Open IMDb",
@@ -208,6 +181,7 @@ namespace Microsoft.BotBuilderSamples
                 return heroCardShowMoreResults;
             }
 
+            // Card that displays try again button
             if (showTryAgainButton)
             {
                 var heroCardMovieRouletteCard = new HeroCard
@@ -221,7 +195,7 @@ namespace Microsoft.BotBuilderSamples
                         "Genre: " + genre + " | " +
                         "Minutes: " + minutes + " | " +
                         "Type: " + type,
-                    Images = new List<CardImage> { new CardImage(imageUrl) },
+                    Images = new List<CardImage> { new(imageUrl) },
                     Buttons = new List<CardAction>
                         {
                             new(ActionTypes.OpenUrl, "Open IMDb",
@@ -233,7 +207,7 @@ namespace Microsoft.BotBuilderSamples
                 return heroCardMovieRouletteCard;
             }
 
-            // Card that returns film without 'show more' button
+            // Card without 'show more' button
             var heroCard = new HeroCard
             {
                 Title = title,
@@ -245,18 +219,17 @@ namespace Microsoft.BotBuilderSamples
                     "Minutes: " + minutes + " | " +
                     "Genre: " + genre + " | " +
                     "Type: " + type,
-                Images = new List<CardImage> { new CardImage(imageUrl) },
+                Images = new List<CardImage> { new(imageUrl) },
                 Buttons = new List<CardAction>
                     {
-                        new CardAction(ActionTypes.OpenUrl, "Open IMDb",
+                        new(ActionTypes.OpenUrl, "Open IMDb",
                             value: "https://www.imdb.com" + filmId)
                     },
             };
             return heroCard;
-
         }
 
-        private static HeroCard CreateActorHeroCards(ImdbResult response, int i)
+        private static HeroCard CreateActorCard(ImdbSearch.Root response, int i)
         {
             // Set default values in case the API doesn't return a value
             var name = "Unknown";
@@ -266,7 +239,7 @@ namespace Microsoft.BotBuilderSamples
             var knownFor = "Unknown";
             var realName = "Unknown";
             var imageUrl =
-                "https://www.publicdomainpictures.net/pictures/280000/velka/not-found-image-15383864787lu.jpg";
+                "https://raw.githubusercontent.com/Bubberzz/IMDb-Chatbot/main/Images/not-found.jpg";
             var id = "tt013";
 
             // Set values returned by the API
@@ -274,7 +247,7 @@ namespace Microsoft.BotBuilderSamples
             realName = SetCardValues.SetRealName(response, i, name);
             rank = SetCardValues.SetRank(response, i, rank);
             bio = SetCardValues.SetBio(response, i, bio);
-            born = SetCardValues.SetBornDate(response, i, born);
+            born = SetCardValues.SetBirthDate(response, i, born);
             knownFor = SetCardValues.SetKnownFor(response, i, knownFor);
             imageUrl = SetCardValues.SetImageUrl(response, i, imageUrl);
             id = SetCardValues.SetFilmId(response, i, id);
@@ -287,10 +260,10 @@ namespace Microsoft.BotBuilderSamples
                     realName + " was born on " + born + "\r\n" +
                     bio + "\r\n " +
                     "Known for: " + knownFor + "\r\n",
-                Images = new List<CardImage> {new CardImage(imageUrl)},
+                Images = new List<CardImage> {new(imageUrl)},
                 Buttons = new List<CardAction>
                 {
-                    new CardAction(ActionTypes.OpenUrl, "Open IMDb",
+                    new(ActionTypes.OpenUrl, "Open IMDb",
                         value: "https://www.imdb.com" + id)
                 },
             };
@@ -299,22 +272,21 @@ namespace Microsoft.BotBuilderSamples
 
         public async Task<HeroCard> CreateComingSoonCardAsync(List<string> list, bool final)
         {
-            StringBuilder myStringBuilder = new StringBuilder();
+            _stringBuilder = new StringBuilder();
 
             if (final is false)
             {
-                for (int i = 0; i < 10; i++)
+                for (var i = 0; i < 10; i++)
                 {
                     var extractId = list[i].Split("/");
                     var resultId = extractId[2];
                     var film = await _imdbService.AutoComplete(resultId);
-                    myStringBuilder.Append($"- {film.d[0].l} ({film.d[0].y}) - {film.d[0].s}");
-                    myStringBuilder.AppendLine();
+                    _stringBuilder.Append($"- {film.d[0].l} ({film.d[0].y}) - {film.d[0].s}");
+                    _stringBuilder.AppendLine();
                 }
-
                 var heroCard = new HeroCard
                 {
-                    Text = myStringBuilder.ToString(),
+                    Text = _stringBuilder.ToString(),
                     Buttons = new List<CardAction>
                     {
                         new(ActionTypes.MessageBack, "More Results",
@@ -325,20 +297,18 @@ namespace Microsoft.BotBuilderSamples
             }
             else
             {
-                for (int i = 0; i < 10; i++)
+                for (var i = 0; i < 10; i++)
                 {
                     var extractId = list[i].Split("/");
                     var resultId = extractId[2];
                     var film = await _imdbService.AutoComplete(resultId);
-                    myStringBuilder.Append($"- {film.d[0].l} ({film.d[0].y}) - {film.d[0].s}");
-                    myStringBuilder.AppendLine();
+                    _stringBuilder.Append($"- {film.d[0].l} ({film.d[0].y}) - {film.d[0].s}");
+                    _stringBuilder.AppendLine();
 
                 }
-                var movies = "";
-
                 var heroCard = new HeroCard
                 {
-                    Text = myStringBuilder.ToString(),
+                    Text = _stringBuilder.ToString(),
                 };
                 return heroCard;
             }
@@ -351,22 +321,20 @@ namespace Microsoft.BotBuilderSamples
                 Title = "Never Gonna Give You Up",
                 Subtitle = "Rick Astley",
                 Text =
-                    "A story about a guy talking to a girl, and he wants to let her know that he will never gonna give her up, let her down, run around, or desert her. He wouldn't make her cry, say goodbye, tell a lie, or hurt her." + "\r\n " +
+                    "A story about a guy talking to a girl. He wants to let her know that he will never give her up, let her down, run around, or desert her. He wouldn't make her cry, say goodbye, tell a lie, or hurt her." + "\r\n " +
                     "Year: " + "1987" + " | " +
                     "Rating: " + "10/10" + " | " +
                     "Genre: " + "Drama" + " | " +
                     "Minutes: " + "3:35" + " | " +
                     "Type: " + "Movie",
-           
                 Media = new List<MediaUrl>
                 {
-                    new MediaUrl()
+                    new()
                     {
                         Url = "https://media.giphy.com/media/Ju7l5y9osyymQ/giphy.gif",
                     },
                 },
             };
-
             return animationCard;
         }
     }
