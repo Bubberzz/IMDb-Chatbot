@@ -1,7 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
-
-using IMDb_Chatbot.Bots;
+﻿using IMDb_Chatbot.Bots;
 using IMDb_Chatbot.Tests.Common;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Adapters;
@@ -9,7 +6,6 @@ using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 using Microsoft.Bot.Schema;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -45,11 +41,25 @@ namespace IMDb_Chatbot.Tests.Bots
             // Assert we got the welcome card
             var reply = (IMessageActivity)testAdapter.GetNextReply();
             Assert.Equal(1, reply.Attachments.Count);
-            Assert.Equal("application/vnd.microsoft.card.adaptive", reply.Attachments.FirstOrDefault()?.ContentType);
+            Assert.Equal("application/vnd.microsoft.card.hero", reply.Attachments[0].ContentType);
 
             // Assert that we started the main dialog.
-            reply = (IMessageActivity)testAdapter.GetNextReply();
-            Assert.Equal("Dialog mock invoked", reply.Text);
+            var attachment = reply.Attachments[0].Content;
+            var getTitle = attachment.GetType().GetProperty("Title");
+            if (getTitle is not null)
+            {
+                var title = (getTitle.GetValue(attachment, null)) as string;
+
+                Assert.Equal("Welcome to IMDb bot!", title);
+            }
+
+            var getText = attachment.GetType().GetProperty("Text");
+            if (getText is not null)
+            {
+                var text = (getText.GetValue(attachment, null)) as string;
+
+                Assert.Equal("Search for a film or actor or type 'Options' for more options", text);
+            }
         }
     }
 }
