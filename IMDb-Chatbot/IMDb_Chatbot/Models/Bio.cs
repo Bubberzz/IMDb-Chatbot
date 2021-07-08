@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace CardsBot.Models
+namespace IMDb_Chatbot.Models
 {
     public class Bio
     {

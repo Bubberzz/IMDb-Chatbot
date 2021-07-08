@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using CardsBot.Models;
 using IMDb_Chatbot.Interfaces;
 using IMDb_Chatbot.Models;
 using Microsoft.Extensions.Configuration;
@@ -29,29 +27,34 @@ namespace IMDb_Chatbot.Services
             var body = await response.Content.ReadAsStringAsync();
             var deserializedBody = JsonConvert.DeserializeObject<ImdbSearch.Root>(body);
 
-            if (deserializedBody.results.Count <= 5)
+            // If null, return to calling function where it will be handled
+            if (deserializedBody.results is null)
             {
                 return deserializedBody;
             }
 
-            var reduceResults = new ImdbSearch.Root()
+            // We only want 5 or less results, api typically brings back 20
+            if (deserializedBody.results.Count < 5)
+            {
+                return deserializedBody;
+            }
+
+            var reducedResultsList = new ImdbSearch.Root()
             {
                 results = new List<ImdbSearch.Result>()
                 {
-                    new ImdbSearch.Result(),
-                    new ImdbSearch.Result(),
-                    new ImdbSearch.Result(),
-                    new ImdbSearch.Result(),
-                    new ImdbSearch.Result()
+                    new(),
+                    new(),
+                    new(),
+                    new(),
+                    new()
                 }
             };
-
             for (var i = 0; i < 5; i++)
             {
-                reduceResults.results[i] = deserializedBody.results[i];
+                reducedResultsList.results[i] = deserializedBody.results[i];
             }
-
-            return reduceResults;
+            return reducedResultsList;
         }
 
         public async Task<Rating.RatingRoot> GetRating(string id)
@@ -76,7 +79,6 @@ namespace IMDb_Chatbot.Services
             return deserializedBody;
         }
 
-
         public async Task<List<string>> GetGenre(string id)
         {
             var client = new HttpClient();
@@ -84,13 +86,8 @@ namespace IMDb_Chatbot.Services
             using var response = await client.SendAsync(request);
             response.EnsureSuccessStatusCode();
             var body = await response.Content.ReadAsStringAsync();
-
-            // fix string response as unable to map to an object due to non json response from API
-            body = body.Replace("\"", "");
-            body = body.Replace("]", "");
-            body = body.Replace("[", "");
-            var genres = body.Split(',').ToList();
-            return genres;
+            var deserializedBody = JsonConvert.DeserializeObject<List<string>>(body);
+            return deserializedBody;
         }
 
         public async Task<Bio.BioRoot> GetBio(string id)
@@ -104,12 +101,12 @@ namespace IMDb_Chatbot.Services
             return deserializedBody;
         }
 
-        public async Task<AutoComplete.Root> AutoComplete(string name)
+        public async Task<AutoComplete.Root> AutoComplete(string search)
         {
             try
             {
                 var client = new HttpClient();
-                var request = CreateRequest("https://imdb8.p.rapidapi.com/auto-complete?q=" + name);
+                var request = CreateRequest("https://imdb8.p.rapidapi.com/auto-complete?q=" + search);
                 using var response = await client.SendAsync(request);
                 response.EnsureSuccessStatusCode();
                 var body = await response.Content.ReadAsStringAsync();
@@ -129,7 +126,6 @@ namespace IMDb_Chatbot.Services
             using var response = await client.SendAsync(request);
             response.EnsureSuccessStatusCode();
             var body = await response.Content.ReadAsStringAsync();
-
             var deserializedBody = JsonConvert.DeserializeObject<List<TopRatedMovies.Root>>(body);
             return deserializedBody;
         }
@@ -151,7 +147,6 @@ namespace IMDb_Chatbot.Services
                 rating += 1;
                 result.Add(new TopRatedActors.Root() {id = item, chartRating = rating});
             }
-
             return result;
         }
 
@@ -164,7 +159,6 @@ namespace IMDb_Chatbot.Services
             using var response = await client.SendAsync(request);
             response.EnsureSuccessStatusCode();
             var body = await response.Content.ReadAsStringAsync();
-
             var deserializedBody = JsonConvert.DeserializeObject<List<string>>(body);
             return deserializedBody;
         }

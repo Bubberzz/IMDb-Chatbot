@@ -1,12 +1,6 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
-//
-// Generated with Bot Builder V4 SDK Template for Visual Studio CoreBot v4.13.2
-
-using IMDb_Chatbot.Bots;
+﻿using IMDb_Chatbot.Bots;
 using IMDb_Chatbot.Dialogs;
 using IMDb_Chatbot.Interfaces;
-using IMDb_Chatbot.Models;
 using IMDb_Chatbot.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -50,10 +44,7 @@ namespace IMDb_Chatbot
             services.AddSingleton<TopRatedActorsDialog>();
             services.AddSingleton<ComingSoonMoviesDialog>();
             services.AddSingleton<MovieRouletteDialog>();
-
-            services.AddSingleton<IImdbResult, ImdbResult>();
-
-
+            services.AddSingleton<ImdbSearchDialog>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -7,20 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Dialogs\TestData\FlightFromCdgToJfk.json" />
-    <None Remove="Dialogs\TestData\FlightFromMadridToChicago.json" />
-    <None Remove="Dialogs\TestData\FlightFromParisToNewYork.json" />
-    <None Remove="Dialogs\TestData\FlightToMadrid.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Dialogs\TestData\FlightFromCdgToJfk.json" />
-    <EmbeddedResource Include="Dialogs\TestData\FlightFromMadridToChicago.json" />
-    <EmbeddedResource Include="Dialogs\TestData\FlightFromParisToNewYork.json" />
-    <EmbeddedResource Include="Dialogs\TestData\FlightToMadrid.json" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.1" />
     <PackageReference Include="Microsoft.Bot.Builder.Testing" Version="4.13.2" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.1.1" />
@@ -33,6 +19,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\IMDb_Chatbot\IMDb_Chatbot.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Integration Tests\API\" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace CardsBot.Models
+namespace IMDb_Chatbot.Models
 {
     public class AutoComplete
     {

@@ -125,7 +125,9 @@ namespace IMDb_Chatbot.Tests.Integration_Tests.API
         {
             // Arrange
             var client = new HttpClient();
-            var request = CreateRequest("https://imdb8.p.rapidapi.com/actors/list-most-popular-celebs?homeCountry=US&currentCountry=US&purchaseCountry=US");
+            var request =
+                CreateRequest(
+                    "https://imdb8.p.rapidapi.com/actors/list-most-popular-celebs?homeCountry=US&currentCountry=US&purchaseCountry=US");
 
             // Act
             using var response = await client.SendAsync(request);
@@ -141,7 +143,9 @@ namespace IMDb_Chatbot.Tests.Integration_Tests.API
         {
             // Arrange
             var client = new HttpClient();
-            var request = CreateRequest("https://imdb8.p.rapidapi.com/title/get-coming-soon-movies?homeCountry=US&purchaseCountry=US&currentCountry=US");
+            var request =
+                CreateRequest(
+                    "https://imdb8.p.rapidapi.com/title/get-coming-soon-movies?homeCountry=US&purchaseCountry=US&currentCountry=US");
 
             // Act
             using var response = await client.SendAsync(request);
@@ -161,8 +165,8 @@ namespace IMDb_Chatbot.Tests.Integration_Tests.API
                 Headers =
                 {
                     {"x-rapidapi-key", Configuration["APIKey"]},
-                    {"x-rapidapi-host", Configuration["APIHost"]},
-                },
+                    {"x-rapidapi-host", Configuration["APIHost"]}
+                }
             };
             return request;
         }
