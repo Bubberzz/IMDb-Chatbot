@@ -1,19 +1,13 @@
-using IMDb_Chatbot.CognitiveModels;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging;
-using Microsoft.Recognizers.Text.DataTypes.TimexExpression;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CardsBot.Models;
 using IMDb_Chatbot.Interfaces;
-using IMDb_Chatbot.Models;
+using IMDb_Chatbot.Services;
 using Microsoft.Bot.Builder.Dialogs.Choices;
-using Microsoft.BotBuilderSamples;
 
 namespace IMDb_Chatbot.Dialogs
 {
@@ -21,30 +15,29 @@ namespace IMDb_Chatbot.Dialogs
     {
         protected readonly ILogger _logger;
         private IImdbService _imdbService;
-        private IImdbResult _imdbResult;
-
+        private string _recommendMovie;
 
         // Dependency injection uses this constructor to instantiate MainDialog
         public MainDialog(
             TopRatedMoviesDialog topRatedMoviesDialog,
             TopRatedActorsDialog topRatedActorsDialog,
             ComingSoonMoviesDialog comingSoonMoviesDialog,
-            //Dialog movieRouletteDialog,
+            MovieRouletteDialog movieRouletteDialog,
+            ImdbSearchDialog imdbSearchDialog,
             ILogger<MainDialog> logger,
-            IImdbService imdbService,
-            IImdbResult imdbResult)
+            IImdbService imdbService)
             : base(nameof(MainDialog))
         {
             _logger = logger;
             _imdbService = imdbService;
-            _imdbResult = imdbResult;
 
             AddDialog(new TextPrompt(nameof(TextPrompt)));
             AddDialog(new ChoicePrompt(nameof(ChoicePrompt)));
             AddDialog(topRatedMoviesDialog);
             AddDialog(topRatedActorsDialog);
             AddDialog(comingSoonMoviesDialog);
-            //AddDialog(movieRouletteDialog);
+            AddDialog(imdbSearchDialog);
+            AddDialog(movieRouletteDialog);
             AddDialog(new WaterfallDialog(nameof(WaterfallDialog), new WaterfallStep[]
             {
                 SelectOptionAsync,
@@ -80,6 +73,36 @@ namespace IMDb_Chatbot.Dialogs
         private async Task<DialogTurnResult> ReturnResultCard(WaterfallStepContext stepContext,
             CancellationToken cancellationToken)
         {
+            _logger.LogInformation("MainDialog.ReturnResultCard");
+
+            // Return recommended movie if the user has responded to the question with a yes or no
+            switch (_recommendMovie)
+            {
+                case "Yes" when UserResponse.UserResponsePositive().Contains(stepContext.Context.Activity.Text):
+                {
+                    await stepContext.Context.SendActivityAsync(
+                        MessageFactory.Text("Generating a personalised recommendation.."), cancellationToken);
+                    Thread.Sleep(10500);
+                    var card = Cards.GetRickAstleyCard();
+                    var reply = MessageFactory.Attachment(new List<Attachment>()
+                    {
+                        card.ToAttachment()
+                    });
+                    _recommendMovie = null;
+                    await stepContext.Context.SendActivityAsync(
+                        MessageFactory.Text("I think you would like this movie."), cancellationToken);
+                    await stepContext.Context.SendActivityAsync(reply, cancellationToken);
+                    return await stepContext.NextAsync(null, cancellationToken);
+
+                }
+                case "Yes" when UserResponse.UserResponseNegative().Contains(stepContext.Context.Activity.Text):
+                {
+                    _recommendMovie = null;
+                    return await stepContext.NextAsync(null, cancellationToken);
+                }
+            }
+
+            // Create a response based on the options user selected in previous step
             if (stepContext.Result is not null)
             {
                 switch (((FoundChoice) stepContext.Result).Value)
@@ -96,12 +119,12 @@ namespace IMDb_Chatbot.Dialogs
                             new ComingSoonMoviesDialog(_imdbService), cancellationToken);
 
                     case "IMDb Roulette":
-                        //return await stepContext.BeginDialogAsync(nameof(movieRouletteDialog), new MovieRouletteDialog(_imdbService), cancellationToken);
-                        break;
+                        return await stepContext.BeginDialogAsync(nameof(MovieRouletteDialog),
+                            new MovieRouletteDialog(_imdbService), cancellationToken);
                 }
             }
 
-            // Create a response card based on activity received from user
+            // Create a response based on activity received from user
             switch (stepContext.Context.Activity.Value)
             {
                 case not null and "Show More: Top rated movies":
@@ -122,19 +145,37 @@ namespace IMDb_Chatbot.Dialogs
                         new ComingSoonMoviesDialog(_imdbService), cancellationToken);
                 }
 
+                case not null and "IMDb Roulette":
+                {
+                    return await stepContext.BeginDialogAsync(nameof(MovieRouletteDialog),
+                        new MovieRouletteDialog(_imdbService),
+                        cancellationToken);
+                }
+
+                case not null and "Show More: Movie Results":
+                {
+                    return await stepContext.BeginDialogAsync(nameof(ImdbSearchDialog),
+                        new ImdbSearchDialog(_imdbService), cancellationToken);
+                }
+
                 default:
                 {
-                    //_imdbResult = await _getImdbResult.ImdbResult(input);
+                    if (stepContext.Context.Activity.Text != null &&
+                        stepContext.Context.Activity.Text.Contains("recommend"))
+                    {
+                        await stepContext.Context.SendActivityAsync(
+                            MessageFactory.Text(
+                                "Would you like me to recommend a movie based on your searches? (ALPHA AI machine learning technology)"),
+                            cancellationToken);
+                        _recommendMovie = "Yes";
+                        return await stepContext.EndDialogAsync(cancellationToken: cancellationToken);
+                    }
 
-                    //var cards = Cards.GetHeroCard((ImdbResult)_imdbResult, true, false);
-                    //reply.Attachments.Add(cards[0].ToAttachment());
-
-                    break;
+                    stepContext.Context.Activity.Value = "";
+                    return await stepContext.BeginDialogAsync(nameof(ImdbSearchDialog),
+                        new ImdbSearchDialog(_imdbService), cancellationToken);
                 }
             }
-
-            _logger.LogInformation("MainDialog.ReturnResultCard");
-            return await stepContext.NextAsync(null, cancellationToken);
         }
 
         private async Task<DialogTurnResult> FinalStepAsync(WaterfallStepContext stepContext,
@@ -143,7 +184,7 @@ namespace IMDb_Chatbot.Dialogs
             // Give the user instructions about what to do next
             await stepContext.Context.SendActivityAsync(
                 MessageFactory.Text("Type anything to do another search or type 'Options'"), cancellationToken);
-
+            _logger.LogInformation("MainDialog.FinalStepAsync");
             return await stepContext.EndDialogAsync(cancellationToken: cancellationToken);
         }
 
@@ -151,13 +192,12 @@ namespace IMDb_Chatbot.Dialogs
         {
             var cardOptions = new List<Choice>()
             {
-                new Choice() {Value = "Top rated movies", Synonyms = new List<string>() {"rated movies"}},
-                new Choice()
-                    {Value = "Top rated actors", Synonyms = new List<string>() {"actor", "actors", "rated actors"}},
-                new Choice() {Value = "Coming soon movies", Synonyms = new List<string>() {"coming", "soon"}},
-                new Choice() {Value = "IMDb Roulette", Synonyms = new List<string>() {"roulette", "imdb"}},
+                new() {Value = "Top rated movies", Synonyms = new List<string>() {"rated movies", "1"}},
+                new()
+                    {Value = "Top rated actors", Synonyms = new List<string>() {"actor", "actors", "rated actors", "2"}},
+                new() {Value = "Coming soon movies", Synonyms = new List<string>() {"coming", "soon", "3"}},
+                new() {Value = "IMDb Roulette", Synonyms = new List<string>() {"roulette", "imdb", "4"}},
             };
-
             return cardOptions;
         }
     }
