@@ -1,13 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using CardsBot.Models;
 using IMDb_Chatbot.Interfaces;
-using IMDb_Chatbot.Models;
+using IMDb_Chatbot.Services;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
-using Microsoft.BotBuilderSamples;
 
 namespace IMDb_Chatbot.Dialogs
 {
@@ -15,7 +13,8 @@ namespace IMDb_Chatbot.Dialogs
     {
         private static IImdbService _imdbService;
         private const string ShowMoreText = "Show More: Coming Soon movies";
-
+        private List<string> _fullMoviesList;
+        private List<string> _moviesToDisplayToUser;
         public ComingSoonMoviesDialog(IImdbService imdbService)
             : base(nameof(ComingSoonMoviesDialog))
         {
@@ -43,20 +42,20 @@ namespace IMDb_Chatbot.Dialogs
             await stepContext.Context.SendActivityAsync(MessageFactory.Text("Loading.."), cancellationToken);
 
             // Call IMDb service and save into model
-            ImdbResult.ComingSoon = await _imdbService.ComingSoon();
+            _fullMoviesList = await _imdbService.ComingSoon();
 
-            var movieList = new List<string>();
+            _moviesToDisplayToUser = new List<string>();
 
             for (var i = 0; i < 10; i++)
             {
-                movieList.Add(ImdbResult.ComingSoon[i]);
+                _moviesToDisplayToUser.Add(_fullMoviesList[i]);
             }
 
             // Update the movie counter - allows show more results to display next 10 in the list
             Counter.MinCount = 10;
             Counter.MaxCount = 20;
 
-            var card = new Cards(_imdbService).CreateComingSoonCardAsync(movieList, false);
+            var card = new Cards(_imdbService).CreateComingSoonCardAsync(_moviesToDisplayToUser, false);
             var reply = MessageFactory.Attachment(new List<Attachment>()
             {
                 card.Result.ToAttachment()
@@ -72,26 +71,26 @@ namespace IMDb_Chatbot.Dialogs
         {
             if (stepContext.Context.Activity.Value is not (not null and ShowMoreText))
                 return await stepContext.NextAsync(null, cancellationToken);
-            var moviesList = new List<string>();
+            _moviesToDisplayToUser = new List<string>();
             var reply = MessageFactory.Attachment(new List<Attachment>());
 
             for (var i = Counter.MinCount; i < Counter.MaxCount; i++)
             {
-                moviesList.Add(ImdbResult.ComingSoon[i]);
+                _moviesToDisplayToUser.Add(_fullMoviesList[i]);
             }
 
             if (Counter.MaxCount >= 30)
             {
                 await stepContext.Context.SendActivityAsync(MessageFactory.Text("Loading.."),
                     cancellationToken);
-                var card = new Cards(_imdbService).CreateComingSoonCardAsync(moviesList, true);
+                var card = new Cards(_imdbService).CreateComingSoonCardAsync(_moviesToDisplayToUser, true);
                 reply.Attachments.Add(card.Result.ToAttachment());
             }
             else
             {
                 await stepContext.Context.SendActivityAsync(MessageFactory.Text("Loading.."),
                     cancellationToken);
-                var card = new Cards(_imdbService).CreateComingSoonCardAsync(moviesList, false);
+                var card = new Cards(_imdbService).CreateComingSoonCardAsync(_moviesToDisplayToUser, false);
                 reply.Attachments.Add(card.Result.ToAttachment());
                 Counter.MinCount += 10;
                 Counter.MaxCount += 10;
