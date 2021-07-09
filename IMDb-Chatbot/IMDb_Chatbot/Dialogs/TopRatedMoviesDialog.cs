@@ -12,8 +12,8 @@ namespace IMDb_Chatbot.Dialogs
 {
     public class TopRatedMoviesDialog : CancelAndHelpDialog
     {
-        private static IImdbService _imdbService;
         private const string ShowMoreText = "Show More: Top rated movies";
+        private static IImdbService _imdbService;
         private List<TopRatedMovies.Root> _fullMoviesList;
         private List<TopRatedMovies.Root> _moviesToDisplayToUser;
 
@@ -33,13 +33,12 @@ namespace IMDb_Chatbot.Dialogs
             _fullMoviesList = new List<TopRatedMovies.Root>();
         }
 
-        private async Task<DialogTurnResult> GetMoviesList(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        private async Task<DialogTurnResult> GetMoviesList(WaterfallStepContext stepContext,
+            CancellationToken cancellationToken)
         {
             // Check of this is a first request or a request to see more results from the list
             if (stepContext.Context.Activity.Value is not null and ShowMoreText)
-            {
                 return await stepContext.NextAsync(null, cancellationToken);
-            }
 
             // Display loading message
             await stepContext.Context.SendActivityAsync(MessageFactory.Text("Loading.."), cancellationToken);
@@ -49,21 +48,18 @@ namespace IMDb_Chatbot.Dialogs
 
             _moviesToDisplayToUser = new List<TopRatedMovies.Root>();
 
-            for (var i = 0; i < 10; i++)
-            {
-                _moviesToDisplayToUser.Add(_fullMoviesList[i]);
-            }
+            for (var i = 0; i < 10; i++) _moviesToDisplayToUser.Add(_fullMoviesList[i]);
 
             // Update the movie counter - allows show more results to display next 10 in the list
             Counter.MinCount = 10;
             Counter.MaxCount = 20;
-            
+
             var card = new Cards(_imdbService).CreateTopRatedMovieCardAsync(_moviesToDisplayToUser, false);
-            var reply = MessageFactory.Attachment(new List<Attachment>()
+            var reply = MessageFactory.Attachment(new List<Attachment>
             {
                 card.Result.ToAttachment()
             });
-            
+
             // Send the card(s) to the user as an attachment to the activity
             await stepContext.Context.SendActivityAsync(reply, cancellationToken);
             return await stepContext.NextAsync(null, cancellationToken);
@@ -77,11 +73,8 @@ namespace IMDb_Chatbot.Dialogs
             _moviesToDisplayToUser = new List<TopRatedMovies.Root>();
             var reply = MessageFactory.Attachment(new List<Attachment>());
 
-            for (var i = Counter.MinCount; i < Counter.MaxCount; i++)
-            {
-                _moviesToDisplayToUser.Add(_fullMoviesList[i]);
-            }
-            
+            for (var i = Counter.MinCount; i < Counter.MaxCount; i++) _moviesToDisplayToUser.Add(_fullMoviesList[i]);
+
             if (Counter.MaxCount >= 100)
             {
                 await stepContext.Context.SendActivityAsync(MessageFactory.Text("Loading.."),

@@ -106,16 +106,13 @@ namespace IMDb_Chatbot.Models
 
         public class Root
         {
-            [JsonProperty("@meta")]
-            public Meta Meta { get; set; }
+            [JsonProperty("@meta")] public Meta Meta { get; set; }
 
-            [JsonProperty("@type")]
-            public string Type { get; set; }
+            [JsonProperty("@type")] public string Type { get; set; }
+
             public string query { get; set; }
             public List<Result> results { get; set; }
             public List<string> types { get; set; }
         }
-
-
     }
 }

@@ -21,7 +21,7 @@ namespace IMDb_Chatbot.Tests.Integration_Tests.Dialogs
         public CancelAndHelpDialogTests(ITestOutputHelper output)
             : base(output)
         {
-            _middlewares = new IMiddleware[] { new XUnitDialogTestLogger(output) };
+            _middlewares = new IMiddleware[] {new XUnitDialogTestLogger(output)};
         }
 
         [Theory]
@@ -69,18 +69,21 @@ namespace IMDb_Chatbot.Tests.Integration_Tests.Dialogs
                 var steps = new WaterfallStep[]
                 {
                     PromptStep,
-                    FinalStep,
+                    FinalStep
                 };
                 AddDialog(new WaterfallDialog("testWaterfall", steps));
                 InitialDialogId = "testWaterfall";
             }
 
-            private async Task<DialogTurnResult> PromptStep(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+            private async Task<DialogTurnResult> PromptStep(WaterfallStepContext stepContext,
+                CancellationToken cancellationToken)
             {
-                return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = MessageFactory.Text("Hi there") }, cancellationToken);
+                return await stepContext.PromptAsync(nameof(TextPrompt),
+                    new PromptOptions {Prompt = MessageFactory.Text("Hi there")}, cancellationToken);
             }
 
-            private Task<DialogTurnResult> FinalStep(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+            private Task<DialogTurnResult> FinalStep(WaterfallStepContext stepContext,
+                CancellationToken cancellationToken)
             {
                 throw new NotImplementedException();
             }

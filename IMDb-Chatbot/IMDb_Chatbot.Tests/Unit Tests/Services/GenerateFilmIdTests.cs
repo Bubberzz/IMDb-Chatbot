@@ -7,12 +7,12 @@ namespace IMDb_Chatbot.Tests.Unit_Tests.Services
 {
     public class GenerateFilmIdTests
     {
-        public IGenerateFilmId GenerateFilmId { get; }
-
         public GenerateFilmIdTests()
         {
             GenerateFilmId = new GenerateFilmId();
         }
+
+        public IGenerateFilmId GenerateFilmId { get; }
 
         [Fact]
         public void GivenGenerateFilmId_ThenReturnRandomId()

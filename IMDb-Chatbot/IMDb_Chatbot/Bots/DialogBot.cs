@@ -1,21 +1,22 @@
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace IMDb_Chatbot.Bots
 {
     public class DialogBot<T> : ActivityHandler
         where T : Dialog
     {
-        protected readonly Dialog Dialog;
         protected readonly BotState ConversationState;
-        protected readonly BotState UserState;
+        protected readonly Dialog Dialog;
         protected readonly ILogger Logger;
+        protected readonly BotState UserState;
 
-        public DialogBot(ConversationState conversationState, UserState userState, T dialog, ILogger<DialogBot<T>> logger)
+        public DialogBot(ConversationState conversationState, UserState userState, T dialog,
+            ILogger<DialogBot<T>> logger)
         {
             ConversationState = conversationState;
             UserState = userState;
@@ -23,7 +24,7 @@ namespace IMDb_Chatbot.Bots
             Logger = logger;
         }
 
-        public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default(CancellationToken))
+        public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default)
         {
             await base.OnTurnAsync(turnContext, cancellationToken);
 
@@ -32,12 +33,14 @@ namespace IMDb_Chatbot.Bots
             await UserState.SaveChangesAsync(turnContext, false, cancellationToken);
         }
 
-        protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
+        protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext,
+            CancellationToken cancellationToken)
         {
             Logger.LogInformation("Running dialog with Message Activity.");
 
             // Run the Dialog with the new message Activity.
-            await Dialog.RunAsync(turnContext, ConversationState.CreateProperty<DialogState>("DialogState"), cancellationToken);
+            await Dialog.RunAsync(turnContext, ConversationState.CreateProperty<DialogState>("DialogState"),
+                cancellationToken);
         }
     }
 }

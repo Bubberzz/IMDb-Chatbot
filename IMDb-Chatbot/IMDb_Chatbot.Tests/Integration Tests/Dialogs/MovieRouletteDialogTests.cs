@@ -17,13 +17,13 @@ namespace IMDb_Chatbot.Tests.Integration_Tests.Dialogs
 {
     public class MovieRouletteDialogTests : BotTestBase
     {
-        private readonly TopRatedMoviesDialog _mockTopRatedMoviesDialog;
-        private readonly TopRatedActorsDialog _mockTopRatedActorsDialog;
         private readonly ComingSoonMoviesDialog _mockComingSoonMoviesDialog;
-        private readonly MovieRouletteDialog _mockMovieRouletteDialog;
         private readonly ImdbSearchDialog _mockImdbSearchDialog;
         private readonly IImdbService _mockImdbService;
         private readonly Mock<ILogger<MainDialog>> _mockLogger;
+        private readonly MovieRouletteDialog _mockMovieRouletteDialog;
+        private readonly TopRatedActorsDialog _mockTopRatedActorsDialog;
+        private readonly TopRatedMoviesDialog _mockTopRatedMoviesDialog;
 
         public MovieRouletteDialogTests()
         {
@@ -58,19 +58,25 @@ namespace IMDb_Chatbot.Tests.Integration_Tests.Dialogs
             {
                 Title = "The Shawshank Redemption",
                 Subtitle = "Tim Robbins, Morgan Freeman, Bob Gunton",
-                Text = "Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.\r\n Year: 1994 | Rating: 9.3 | Genre: Drama | Minutes: 142 | Type: movie",
-                Images = new List<CardImage> { new CardImage("https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNTEtODM1ZmRlYWMwMWFmXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_.jpg") },
+                Text =
+                    "Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.\r\n Year: 1994 | Rating: 9.3 | Genre: Drama | Minutes: 142 | Type: movie",
+                Images = new List<CardImage>
+                {
+                    new(
+                        "https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNTEtODM1ZmRlYWMwMWFmXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_.jpg")
+                },
                 Buttons = new List<CardAction>
                 {
                     new(ActionTypes.OpenUrl, "Open IMDb",
                         value: "https://www.imdb.com/title/tt0111161/"),
                     new(ActionTypes.MessageBack, "Try Again?",
                         value: "IMDb Roulette")
-                },
+                }
             };
 
             // Act
-            var sut = new MainDialog(_mockTopRatedMoviesDialog, _mockTopRatedActorsDialog, _mockComingSoonMoviesDialog, _mockMovieRouletteDialog,
+            var sut = new MainDialog(_mockTopRatedMoviesDialog, _mockTopRatedActorsDialog, _mockComingSoonMoviesDialog,
+                _mockMovieRouletteDialog,
                 _mockImdbSearchDialog, _mockLogger.Object, mock.Object);
             var testClient = new DialogTestClient(Channels.Msteams, sut);
 
@@ -95,7 +101,7 @@ namespace IMDb_Chatbot.Tests.Integration_Tests.Dialogs
         [Theory]
         [MemberData(nameof(TestDataGenerator.IMDbTestData), MemberType = typeof(TestDataGenerator))]
         public async Task GivenMovieRouletteDialog_WhenUserSelectsTryAgain_ThenReturnHeroCard(TestDataObject testData)
-        {          
+        {
             // Arrange
             var data = testData.GetObject<TestCases>();
             var mock = new Mock<IImdbService>();
@@ -114,19 +120,25 @@ namespace IMDb_Chatbot.Tests.Integration_Tests.Dialogs
             {
                 Title = "The Shawshank Redemption",
                 Subtitle = "Tim Robbins, Morgan Freeman, Bob Gunton",
-                Text = "Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.\r\n Year: 1994 | Rating: 9.3 | Genre: Drama | Minutes: 142 | Type: movie",
-                Images = new List<CardImage> { new CardImage("https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNTEtODM1ZmRlYWMwMWFmXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_.jpg") },
+                Text =
+                    "Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.\r\n Year: 1994 | Rating: 9.3 | Genre: Drama | Minutes: 142 | Type: movie",
+                Images = new List<CardImage>
+                {
+                    new(
+                        "https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNTEtODM1ZmRlYWMwMWFmXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_.jpg")
+                },
                 Buttons = new List<CardAction>
                 {
                     new(ActionTypes.OpenUrl, "Open IMDb",
                         value: "https://www.imdb.com/title/tt0111161/"),
                     new(ActionTypes.MessageBack, "Try Again?",
                         value: "IMDb Roulette")
-                },
+                }
             };
 
             // Act
-            var sut = new MainDialog(_mockTopRatedMoviesDialog, _mockTopRatedActorsDialog, _mockComingSoonMoviesDialog, _mockMovieRouletteDialog,
+            var sut = new MainDialog(_mockTopRatedMoviesDialog, _mockTopRatedActorsDialog, _mockComingSoonMoviesDialog,
+                _mockMovieRouletteDialog,
                 _mockImdbSearchDialog, _mockLogger.Object, mock.Object);
             var testClient = new DialogTestClient(Channels.Msteams, sut);
 
@@ -140,7 +152,7 @@ namespace IMDb_Chatbot.Tests.Integration_Tests.Dialogs
             var activityReply = testClient.SendActivityAsync<IActivity>(activity);
             reply = testClient.GetNextReply<IMessageActivity>();
             reply = testClient.GetNextReply<IMessageActivity>();
-            
+
             Assert.NotNull(reply.Attachments[0]);
             Assert.Equal("list", reply.AttachmentLayout);
             Assert.Equal("Microsoft.Bot.Schema.HeroCard", reply.Attachments[0].Content.ToString());

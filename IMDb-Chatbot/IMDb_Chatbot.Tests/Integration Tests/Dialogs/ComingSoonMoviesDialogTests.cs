@@ -17,13 +17,13 @@ namespace IMDb_Chatbot.Tests.Integration_Tests.Dialogs
 {
     public class ComingSoonMoviesDialogTests : BotTestBase
     {
-        private readonly TopRatedMoviesDialog _mockTopRatedMoviesDialog;
-        private readonly TopRatedActorsDialog _mockTopRatedActorsDialog;
         private readonly ComingSoonMoviesDialog _mockComingSoonMoviesDialog;
-        private readonly MovieRouletteDialog _mockMovieRouletteDialog;
         private readonly ImdbSearchDialog _mockImdbSearchDialog;
         private readonly IImdbService _mockImdbService;
         private readonly Mock<ILogger<MainDialog>> _mockLogger;
+        private readonly MovieRouletteDialog _mockMovieRouletteDialog;
+        private readonly TopRatedActorsDialog _mockTopRatedActorsDialog;
+        private readonly TopRatedMoviesDialog _mockTopRatedMoviesDialog;
 
         public ComingSoonMoviesDialogTests()
         {
@@ -55,11 +55,12 @@ namespace IMDb_Chatbot.Tests.Integration_Tests.Dialogs
                 {
                     new(ActionTypes.MessageBack, "More Results",
                         value: "Show More: Coming Soon movies")
-                },
+                }
             };
 
             // Act
-            var sut = new MainDialog(_mockTopRatedMoviesDialog, _mockTopRatedActorsDialog, _mockComingSoonMoviesDialog, _mockMovieRouletteDialog,
+            var sut = new MainDialog(_mockTopRatedMoviesDialog, _mockTopRatedActorsDialog, _mockComingSoonMoviesDialog,
+                _mockMovieRouletteDialog,
                 _mockImdbSearchDialog, _mockLogger.Object, mock.Object);
             var testClient = new DialogTestClient(Channels.Msteams, sut);
 
@@ -83,7 +84,8 @@ namespace IMDb_Chatbot.Tests.Integration_Tests.Dialogs
 
         [Theory]
         [MemberData(nameof(TestDataGenerator.IMDbTestData), MemberType = typeof(TestDataGenerator))]
-        public async Task GivenComingSoonMoviesDialog_WhenUserSelectsMoreResults_ThenReturnHeroCard(TestDataObject testData)
+        public async Task GivenComingSoonMoviesDialog_WhenUserSelectsMoreResults_ThenReturnHeroCard(
+            TestDataObject testData)
         {
             // Arrange
             var data = testData.GetObject<TestCases>();
@@ -100,11 +102,12 @@ namespace IMDb_Chatbot.Tests.Integration_Tests.Dialogs
                 {
                     new(ActionTypes.MessageBack, "More Results",
                         value: "Show More: Coming Soon movies")
-                },
+                }
             };
 
             // Act
-            var sut = new MainDialog(_mockTopRatedMoviesDialog, _mockTopRatedActorsDialog, _mockComingSoonMoviesDialog, _mockMovieRouletteDialog,
+            var sut = new MainDialog(_mockTopRatedMoviesDialog, _mockTopRatedActorsDialog, _mockComingSoonMoviesDialog,
+                _mockMovieRouletteDialog,
                 _mockImdbSearchDialog, _mockLogger.Object, mock.Object);
             var testClient = new DialogTestClient(Channels.Msteams, sut);
 
@@ -133,8 +136,9 @@ namespace IMDb_Chatbot.Tests.Integration_Tests.Dialogs
 
         [Theory]
         [MemberData(nameof(TestDataGenerator.IMDbTestData), MemberType = typeof(TestDataGenerator))]
-        public async Task GivenComingSoonMoviesDialog_WhenUserSelectsMoreResults_AndThereIsNoMoreResults_ThenReturnFinalCard(
-            TestDataObject testData)
+        public async Task
+            GivenComingSoonMoviesDialog_WhenUserSelectsMoreResults_AndThereIsNoMoreResults_ThenReturnFinalCard(
+                TestDataObject testData)
         {
             // Arrange
             var data = testData.GetObject<TestCases>();
@@ -146,11 +150,12 @@ namespace IMDb_Chatbot.Tests.Integration_Tests.Dialogs
 
             var heroCard = new HeroCard
             {
-                Text = ExpectedComingSoonMoviesContent,
+                Text = ExpectedComingSoonMoviesContent
             };
 
             // Act
-            var sut = new MainDialog(_mockTopRatedMoviesDialog, _mockTopRatedActorsDialog, _mockComingSoonMoviesDialog, _mockMovieRouletteDialog,
+            var sut = new MainDialog(_mockTopRatedMoviesDialog, _mockTopRatedActorsDialog, _mockComingSoonMoviesDialog,
+                _mockMovieRouletteDialog,
                 _mockImdbSearchDialog, _mockLogger.Object, mock.Object);
             var testClient = new DialogTestClient(Channels.Msteams, sut);
 

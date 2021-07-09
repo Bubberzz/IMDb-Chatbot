@@ -15,8 +15,8 @@ namespace IMDb_Chatbot.Models
 
         public class Base
         {
-            [JsonProperty("@type")]
-            public string Type { get; set; }
+            [JsonProperty("@type")] public string Type { get; set; }
+
             public string id { get; set; }
             public Image image { get; set; }
             public string title { get; set; }
@@ -37,7 +37,5 @@ namespace IMDb_Chatbot.Models
             public Base @base { get; set; }
             public List<FilmPlot> plots { get; set; }
         }
-
-
     }
 }

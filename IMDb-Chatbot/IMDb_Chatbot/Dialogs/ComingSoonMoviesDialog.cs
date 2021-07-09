@@ -11,10 +11,11 @@ namespace IMDb_Chatbot.Dialogs
 {
     public class ComingSoonMoviesDialog : CancelAndHelpDialog
     {
-        private static IImdbService _imdbService;
         private const string ShowMoreText = "Show More: Coming Soon movies";
+        private static IImdbService _imdbService;
         private List<string> _fullMoviesList;
         private List<string> _moviesToDisplayToUser;
+
         public ComingSoonMoviesDialog(IImdbService imdbService)
             : base(nameof(ComingSoonMoviesDialog))
         {
@@ -30,13 +31,12 @@ namespace IMDb_Chatbot.Dialogs
             _imdbService = imdbService;
         }
 
-        private async Task<DialogTurnResult> GetMoviesList(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        private async Task<DialogTurnResult> GetMoviesList(WaterfallStepContext stepContext,
+            CancellationToken cancellationToken)
         {
             // Check of this is a first request or a request to see more results from the list
             if (stepContext.Context.Activity.Value is not null and ShowMoreText)
-            {
                 return await stepContext.NextAsync(null, cancellationToken);
-            }
 
             // Display loading message
             await stepContext.Context.SendActivityAsync(MessageFactory.Text("Loading.."), cancellationToken);
@@ -46,17 +46,14 @@ namespace IMDb_Chatbot.Dialogs
 
             _moviesToDisplayToUser = new List<string>();
 
-            for (var i = 0; i < 10; i++)
-            {
-                _moviesToDisplayToUser.Add(_fullMoviesList[i]);
-            }
+            for (var i = 0; i < 10; i++) _moviesToDisplayToUser.Add(_fullMoviesList[i]);
 
             // Update the movie counter - allows show more results to display next 10 in the list
             Counter.MinCount = 10;
             Counter.MaxCount = 20;
 
             var card = new Cards(_imdbService).CreateComingSoonCardAsync(_moviesToDisplayToUser, false);
-            var reply = MessageFactory.Attachment(new List<Attachment>()
+            var reply = MessageFactory.Attachment(new List<Attachment>
             {
                 card.Result.ToAttachment()
             });
@@ -74,10 +71,7 @@ namespace IMDb_Chatbot.Dialogs
             _moviesToDisplayToUser = new List<string>();
             var reply = MessageFactory.Attachment(new List<Attachment>());
 
-            for (var i = Counter.MinCount; i < Counter.MaxCount; i++)
-            {
-                _moviesToDisplayToUser.Add(_fullMoviesList[i]);
-            }
+            for (var i = Counter.MinCount; i < Counter.MaxCount; i++) _moviesToDisplayToUser.Add(_fullMoviesList[i]);
 
             if (Counter.MaxCount >= 30)
             {

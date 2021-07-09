@@ -1,8 +1,8 @@
-﻿using Microsoft.Bot.Builder;
+﻿using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using Moq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace IMDb_Chatbot.Tests.Common
 {
@@ -14,10 +14,12 @@ namespace IMDb_Chatbot.Tests.Common
             var mockDialog = new Mock<T>(constructorParams);
             var mockDialogNameTypeName = typeof(T).Name;
             mockDialog
-                .Setup(x => x.BeginDialogAsync(It.IsAny<DialogContext>(), It.IsAny<object>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.BeginDialogAsync(It.IsAny<DialogContext>(), It.IsAny<object>(),
+                    It.IsAny<CancellationToken>()))
                 .Returns(async (DialogContext dialogContext, object options, CancellationToken cancellationToken) =>
                 {
-                    await dialogContext.Context.SendActivityAsync($"{mockDialogNameTypeName} mock invoked", cancellationToken: cancellationToken);
+                    await dialogContext.Context.SendActivityAsync($"{mockDialogNameTypeName} mock invoked",
+                        cancellationToken: cancellationToken);
 
                     return await dialogContext.EndDialogAsync(expectedResult, cancellationToken);
                 });
@@ -25,7 +27,8 @@ namespace IMDb_Chatbot.Tests.Common
             return mockDialog;
         }
 
-        public static Mock<TRecognizer> CreateMockLuisRecognizer<TRecognizer, TReturns>(TReturns returns, params object[] constructorParams)
+        public static Mock<TRecognizer> CreateMockLuisRecognizer<TRecognizer, TReturns>(TReturns returns,
+            params object[] constructorParams)
             where TRecognizer : class, IRecognizer
             where TReturns : IRecognizerConvert, new()
         {
@@ -36,7 +39,8 @@ namespace IMDb_Chatbot.Tests.Common
             return mockRecognizer;
         }
 
-        public static Mock<TRecognizer> CreateMockLuisRecognizer<TRecognizer>(RecognizerResult returns, params object[] constructorParams)
+        public static Mock<TRecognizer> CreateMockLuisRecognizer<TRecognizer>(RecognizerResult returns,
+            params object[] constructorParams)
             where TRecognizer : class, IRecognizer
         {
             var mockRecognizer = new Mock<TRecognizer>(constructorParams);

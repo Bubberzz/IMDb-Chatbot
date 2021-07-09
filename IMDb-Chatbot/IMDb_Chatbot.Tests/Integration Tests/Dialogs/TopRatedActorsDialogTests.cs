@@ -17,13 +17,13 @@ namespace IMDb_Chatbot.Tests.Integration_Tests.Dialogs
 {
     public class TopRatedActorsDialogTests : BotTestBase
     {
-        private readonly TopRatedMoviesDialog _mockTopRatedMoviesDialog;
-        private readonly TopRatedActorsDialog _mockTopRatedActorsDialog;
         private readonly ComingSoonMoviesDialog _mockComingSoonMoviesDialog;
-        private readonly MovieRouletteDialog _mockMovieRouletteDialog;
         private readonly ImdbSearchDialog _mockImdbSearchDialog;
         private readonly IImdbService _mockImdbService;
         private readonly Mock<ILogger<MainDialog>> _mockLogger;
+        private readonly MovieRouletteDialog _mockMovieRouletteDialog;
+        private readonly TopRatedActorsDialog _mockTopRatedActorsDialog;
+        private readonly TopRatedMoviesDialog _mockTopRatedMoviesDialog;
 
         public TopRatedActorsDialogTests()
         {
@@ -34,7 +34,6 @@ namespace IMDb_Chatbot.Tests.Integration_Tests.Dialogs
             _mockImdbSearchDialog = new ImdbSearchDialog(_mockImdbService);
             _mockImdbService = new Mock<IImdbService>().Object;
             _mockLogger = new Mock<ILogger<MainDialog>>();
-
         }
 
         [Theory]
@@ -56,11 +55,12 @@ namespace IMDb_Chatbot.Tests.Integration_Tests.Dialogs
                 {
                     new(ActionTypes.MessageBack, "More Results",
                         value: "Show More: Top rated actors")
-                },
+                }
             };
 
             // Act
-            var sut = new MainDialog(_mockTopRatedMoviesDialog, _mockTopRatedActorsDialog, _mockComingSoonMoviesDialog, _mockMovieRouletteDialog,
+            var sut = new MainDialog(_mockTopRatedMoviesDialog, _mockTopRatedActorsDialog, _mockComingSoonMoviesDialog,
+                _mockMovieRouletteDialog,
                 _mockImdbSearchDialog, _mockLogger.Object, mock.Object);
             var testClient = new DialogTestClient(Channels.Msteams, sut);
 
@@ -84,7 +84,8 @@ namespace IMDb_Chatbot.Tests.Integration_Tests.Dialogs
 
         [Theory]
         [MemberData(nameof(TestDataGenerator.IMDbTestData), MemberType = typeof(TestDataGenerator))]
-        public async Task GivenTopRatedActorsDialog_WhenUserSelectsMoreResults_ThenReturnHeroCard(TestDataObject testData)
+        public async Task GivenTopRatedActorsDialog_WhenUserSelectsMoreResults_ThenReturnHeroCard(
+            TestDataObject testData)
         {
             // Arrange
             var data = testData.GetObject<TestCases>();
@@ -101,11 +102,12 @@ namespace IMDb_Chatbot.Tests.Integration_Tests.Dialogs
                 {
                     new(ActionTypes.MessageBack, "More Results",
                         value: "Show More: Top rated actors")
-                },
+                }
             };
 
             // Act
-            var sut = new MainDialog(_mockTopRatedMoviesDialog, _mockTopRatedActorsDialog, _mockComingSoonMoviesDialog, _mockMovieRouletteDialog,
+            var sut = new MainDialog(_mockTopRatedMoviesDialog, _mockTopRatedActorsDialog, _mockComingSoonMoviesDialog,
+                _mockMovieRouletteDialog,
                 _mockImdbSearchDialog, _mockLogger.Object, mock.Object);
             var testClient = new DialogTestClient(Channels.Msteams, sut);
 
@@ -134,8 +136,9 @@ namespace IMDb_Chatbot.Tests.Integration_Tests.Dialogs
 
         [Theory]
         [MemberData(nameof(TestDataGenerator.IMDbTestData), MemberType = typeof(TestDataGenerator))]
-        public async Task GivenTopRatedActorsDialog_WhenUserSelectsMoreResults_AndThereIsNoMoreResults_ThenReturnFinalCard(
-            TestDataObject testData)
+        public async Task
+            GivenTopRatedActorsDialog_WhenUserSelectsMoreResults_AndThereIsNoMoreResults_ThenReturnFinalCard(
+                TestDataObject testData)
         {
             // Arrange
             var data = testData.GetObject<TestCases>();
@@ -147,11 +150,12 @@ namespace IMDb_Chatbot.Tests.Integration_Tests.Dialogs
 
             var heroCard = new HeroCard
             {
-                Text = ExpectedTopRatedActorsContentLastResult,
+                Text = ExpectedTopRatedActorsContentLastResult
             };
 
             // Act
-            var sut = new MainDialog(_mockTopRatedMoviesDialog, _mockTopRatedActorsDialog, _mockComingSoonMoviesDialog, _mockMovieRouletteDialog,
+            var sut = new MainDialog(_mockTopRatedMoviesDialog, _mockTopRatedActorsDialog, _mockComingSoonMoviesDialog,
+                _mockMovieRouletteDialog,
                 _mockImdbSearchDialog, _mockLogger.Object, mock.Object);
             var testClient = new DialogTestClient(Channels.Msteams, sut);
 
@@ -204,6 +208,5 @@ namespace IMDb_Chatbot.Tests.Integration_Tests.Dialogs
             reply = testClient.GetNextReply<IMessageActivity>();
             Assert.Equal("Type anything to do another search or type 'Options'", reply.Text);
         }
-
     }
 }

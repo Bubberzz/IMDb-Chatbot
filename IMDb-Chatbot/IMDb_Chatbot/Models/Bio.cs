@@ -49,7 +49,5 @@ namespace IMDb_Chatbot.Models
             public List<string> trademarks { get; set; }
             public List<MiniBio> miniBios { get; set; }
         }
-
-
     }
 }

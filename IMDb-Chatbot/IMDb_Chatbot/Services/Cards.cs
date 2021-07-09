@@ -9,8 +9,9 @@ namespace IMDb_Chatbot.Services
 {
     public class Cards
     {
-        private IImdbService _imdbService;
+        private readonly IImdbService _imdbService;
         private StringBuilder _stringBuilder;
+
         public Cards(IImdbService imdbService)
         {
             _imdbService = imdbService;
@@ -24,7 +25,6 @@ namespace IMDb_Chatbot.Services
             for (var i = 0; i < response.results.Count; i++)
             {
                 if (response.results[i].id.StartsWith("/title"))
-                {
                     switch (showMoreResults)
                     {
                         case true:
@@ -34,12 +34,10 @@ namespace IMDb_Chatbot.Services
                             result.Add(CreateFilmCard(response, i, false, showTryAgainButton));
                             break;
                     }
-                }
-                if (response.results[i].id.StartsWith("/name"))
-                {
-                    result.Add(CreateActorCard(response, i));
-                }
+
+                if (response.results[i].id.StartsWith("/name")) result.Add(CreateActorCard(response, i));
             }
+
             return result;
         }
 
@@ -56,6 +54,7 @@ namespace IMDb_Chatbot.Services
                     _stringBuilder.Append($"Rating: {list[i].chartRating} - {film.d[0].l}");
                     _stringBuilder.AppendLine();
                 }
+
                 var heroCard = new HeroCard
                 {
                     Text = _stringBuilder.ToString(),
@@ -63,7 +62,7 @@ namespace IMDb_Chatbot.Services
                     {
                         new(ActionTypes.MessageBack, "More Results",
                             value: "Show More: Top rated movies")
-                    },
+                    }
                 };
                 return heroCard;
             }
@@ -76,9 +75,10 @@ namespace IMDb_Chatbot.Services
                     _stringBuilder.Append($"Rating: {list[i].chartRating} - {film.d[0].l}");
                     _stringBuilder.AppendLine();
                 }
+
                 var heroCard = new HeroCard
                 {
-                    Text = _stringBuilder.ToString(),
+                    Text = _stringBuilder.ToString()
                 };
                 return heroCard;
             }
@@ -97,6 +97,7 @@ namespace IMDb_Chatbot.Services
                     _stringBuilder.Append($"Rank: {list[i].chartRating} - {actor.d[0].l}");
                     _stringBuilder.AppendLine();
                 }
+
                 var heroCard = new HeroCard
                 {
                     Text = _stringBuilder.ToString(),
@@ -104,7 +105,7 @@ namespace IMDb_Chatbot.Services
                     {
                         new(ActionTypes.MessageBack, "More Results",
                             value: "Show More: Top rated actors")
-                    },
+                    }
                 };
                 return heroCard;
             }
@@ -116,17 +117,18 @@ namespace IMDb_Chatbot.Services
                     var actor = await _imdbService.AutoComplete(resultId);
                     _stringBuilder.Append($"Rank: {list[i].chartRating} - {actor.d[0].l}");
                     _stringBuilder.AppendLine();
-
                 }
+
                 var heroCard = new HeroCard
                 {
-                    Text = _stringBuilder.ToString(),
+                    Text = _stringBuilder.ToString()
                 };
                 return heroCard;
             }
         }
 
-        private static HeroCard CreateFilmCard(ImdbSearch.Root response, int i, bool showMoreResultsButton, bool showTryAgainButton)
+        private static HeroCard CreateFilmCard(ImdbSearch.Root response, int i, bool showMoreResultsButton,
+            bool showTryAgainButton)
         {
             // Set default values in case the API doesn't return a value
             var title = "Unknown";
@@ -169,14 +171,14 @@ namespace IMDb_Chatbot.Services
                         "Genre: " + genre + " | " +
                         "Minutes: " + minutes + " | " +
                         "Type: " + type,
-                    Images = new List<CardImage> { new(imageUrl) },
+                    Images = new List<CardImage> {new(imageUrl)},
                     Buttons = new List<CardAction>
                     {
                         new(ActionTypes.OpenUrl, "Open IMDb",
                             value: "https://www.imdb.com" + filmId),
                         new(ActionTypes.MessageBack, "More Results",
                             value: "Show More: Movie Results")
-                    },
+                    }
                 };
                 return heroCardShowMoreResults;
             }
@@ -195,14 +197,14 @@ namespace IMDb_Chatbot.Services
                         "Genre: " + genre + " | " +
                         "Minutes: " + minutes + " | " +
                         "Type: " + type,
-                    Images = new List<CardImage> { new(imageUrl) },
+                    Images = new List<CardImage> {new(imageUrl)},
                     Buttons = new List<CardAction>
-                        {
-                            new(ActionTypes.OpenUrl, "Open IMDb",
-                                value: "https://www.imdb.com" + filmId),
-                            new(ActionTypes.MessageBack, "Try Again?",
-                                value: "IMDb Roulette")
-                        },
+                    {
+                        new(ActionTypes.OpenUrl, "Open IMDb",
+                            value: "https://www.imdb.com" + filmId),
+                        new(ActionTypes.MessageBack, "Try Again?",
+                            value: "IMDb Roulette")
+                    }
                 };
                 return heroCardMovieRouletteCard;
             }
@@ -219,12 +221,12 @@ namespace IMDb_Chatbot.Services
                     "Minutes: " + minutes + " | " +
                     "Genre: " + genre + " | " +
                     "Type: " + type,
-                Images = new List<CardImage> { new(imageUrl) },
+                Images = new List<CardImage> {new(imageUrl)},
                 Buttons = new List<CardAction>
-                    {
-                        new(ActionTypes.OpenUrl, "Open IMDb",
-                            value: "https://www.imdb.com" + filmId)
-                    },
+                {
+                    new(ActionTypes.OpenUrl, "Open IMDb",
+                        value: "https://www.imdb.com" + filmId)
+                }
             };
             return heroCard;
         }
@@ -265,7 +267,7 @@ namespace IMDb_Chatbot.Services
                 {
                     new(ActionTypes.OpenUrl, "Open IMDb",
                         value: "https://www.imdb.com" + id)
-                },
+                }
             };
             return heroCard;
         }
@@ -284,6 +286,7 @@ namespace IMDb_Chatbot.Services
                     _stringBuilder.Append($"- {film.d[0].l} ({film.d[0].y}) - {film.d[0].s}");
                     _stringBuilder.AppendLine();
                 }
+
                 var heroCard = new HeroCard
                 {
                     Text = _stringBuilder.ToString(),
@@ -291,7 +294,7 @@ namespace IMDb_Chatbot.Services
                     {
                         new(ActionTypes.MessageBack, "More Results",
                             value: "Show More: Coming Soon movies")
-                    },
+                    }
                 };
                 return heroCard;
             }
@@ -304,11 +307,11 @@ namespace IMDb_Chatbot.Services
                     var film = await _imdbService.AutoComplete(resultId);
                     _stringBuilder.Append($"- {film.d[0].l} ({film.d[0].y}) - {film.d[0].s}");
                     _stringBuilder.AppendLine();
-
                 }
+
                 var heroCard = new HeroCard
                 {
-                    Text = _stringBuilder.ToString(),
+                    Text = _stringBuilder.ToString()
                 };
                 return heroCard;
             }
@@ -321,7 +324,8 @@ namespace IMDb_Chatbot.Services
                 Title = "Never Gonna Give You Up",
                 Subtitle = "Rick Astley",
                 Text =
-                    "A story about a guy talking to a girl. He wants to let her know that he will never give her up, let her down, run around, or desert her. He wouldn't make her cry, say goodbye, tell a lie, or hurt her." + "\r\n " +
+                    "A story about a guy talking to a girl. He wants to let her know that he will never give her up, let her down, run around, or desert her. He wouldn't make her cry, say goodbye, tell a lie, or hurt her." +
+                    "\r\n " +
                     "Year: " + "1987" + " | " +
                     "Rating: " + "10/10" + " | " +
                     "Genre: " + "Drama" + " | " +
@@ -331,9 +335,9 @@ namespace IMDb_Chatbot.Services
                 {
                     new()
                     {
-                        Url = "https://media.giphy.com/media/Ju7l5y9osyymQ/giphy.gif",
-                    },
-                },
+                        Url = "https://media.giphy.com/media/Ju7l5y9osyymQ/giphy.gif"
+                    }
+                }
             };
             return animationCard;
         }

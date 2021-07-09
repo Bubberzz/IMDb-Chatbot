@@ -12,9 +12,9 @@ namespace IMDb_Chatbot.Tests.Unit_Tests.Services
         public void WhenGetIdIsCalled_ForImdbSearchDialog_ThenReturnId(string value)
         {
             // Arrange
-            var searchResult = new ImdbSearch.Root()
+            var searchResult = new ImdbSearch.Root
             {
-                results = new List<ImdbSearch.Result>()
+                results = new List<ImdbSearch.Result>
                 {
                     new()
                     {
@@ -39,9 +39,9 @@ namespace IMDb_Chatbot.Tests.Unit_Tests.Services
         public void WhenGetIdIsCalled_ForTopRatedMoviesDialog_ThenReturnId(string value)
         {
             // Arrange
-            var searchResult = new List<TopRatedMovies.Root>()
+            var searchResult = new List<TopRatedMovies.Root>
             {
-                new TopRatedMovies.Root()
+                new()
                 {
                     id = value
                 }
@@ -62,9 +62,9 @@ namespace IMDb_Chatbot.Tests.Unit_Tests.Services
         public void WhenGetIdIsCalled_ForTopRatedActorsDialog_ThenReturnId(string value)
         {
             // Arrange
-            var searchResult = new List<TopRatedActors.Root>()
+            var searchResult = new List<TopRatedActors.Root>
             {
-                new TopRatedActors.Root()
+                new()
                 {
                     id = value
                 }

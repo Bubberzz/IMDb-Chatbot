@@ -12,10 +12,10 @@ namespace IMDb_Chatbot.Dialogs
 {
     public class TopRatedActorsDialog : CancelAndHelpDialog
     {
-        private static IImdbService _imdbService;
         private const string ShowMoreText = "Show More: Top rated actors";
-        private List<TopRatedActors.Root> _fullActorsList;
+        private static IImdbService _imdbService;
         private List<TopRatedActors.Root> _actorsListToDisplayToUser;
+        private List<TopRatedActors.Root> _fullActorsList;
 
         public TopRatedActorsDialog(IImdbService imdbService)
             : base(nameof(TopRatedActorsDialog))
@@ -36,20 +36,15 @@ namespace IMDb_Chatbot.Dialogs
             CancellationToken cancellationToken)
         {
             if (stepContext.Context.Activity.Value is not null and ShowMoreText)
-            {
                 return await stepContext.NextAsync(null, cancellationToken);
-            }
 
             await stepContext.Context.SendActivityAsync(MessageFactory.Text("Loading.."), cancellationToken);
             _fullActorsList = await _imdbService.GetTopRatedActors();
             _actorsListToDisplayToUser = new List<TopRatedActors.Root>();
-            for (var i = 0; i < 10; i++)
-            {
-                _actorsListToDisplayToUser.Add(_fullActorsList[i]);
-            }
+            for (var i = 0; i < 10; i++) _actorsListToDisplayToUser.Add(_fullActorsList[i]);
 
             var card = new Cards(_imdbService).CreateTopRatedActorCardAsync(_actorsListToDisplayToUser, false);
-            var reply = MessageFactory.Attachment(new List<Attachment>()
+            var reply = MessageFactory.Attachment(new List<Attachment>
             {
                 card.Result.ToAttachment()
             });
@@ -61,7 +56,8 @@ namespace IMDb_Chatbot.Dialogs
             return await stepContext.EndDialogAsync(cancellationToken: cancellationToken);
         }
 
-        private async Task<DialogTurnResult> ShowMoreResults(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        private async Task<DialogTurnResult> ShowMoreResults(WaterfallStepContext stepContext,
+            CancellationToken cancellationToken)
         {
             if (stepContext.Context.Activity.Value is not (not null and ShowMoreText))
                 return await stepContext.NextAsync(null, cancellationToken);
@@ -69,9 +65,7 @@ namespace IMDb_Chatbot.Dialogs
             var reply = MessageFactory.Attachment(new List<Attachment>());
 
             for (var i = Counter.MinCount; i < Counter.MaxCount; i++)
-            {
                 _actorsListToDisplayToUser.Add(_fullActorsList[i]);
-            }
 
             if (Counter.MaxCount >= 80)
             {
@@ -84,11 +78,13 @@ namespace IMDb_Chatbot.Dialogs
             {
                 await stepContext.Context.SendActivityAsync(MessageFactory.Text("Loading.."),
                     cancellationToken);
-                var cardsClass = new Cards(_imdbService).CreateTopRatedActorCardAsync(_actorsListToDisplayToUser, false);
+                var cardsClass =
+                    new Cards(_imdbService).CreateTopRatedActorCardAsync(_actorsListToDisplayToUser, false);
                 reply.Attachments.Add(cardsClass.Result.ToAttachment());
                 Counter.MinCount += 10;
                 Counter.MaxCount += 10;
             }
+
             await stepContext.Context.SendActivityAsync(reply, cancellationToken);
             return await stepContext.NextAsync(null, cancellationToken);
         }

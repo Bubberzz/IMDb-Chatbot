@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using IMDb_Chatbot.Models;
 using IMDb_Chatbot.Services;
 using Xunit;
@@ -16,9 +15,9 @@ namespace IMDb_Chatbot.Tests.Unit_Tests.Services
         public void GivenSetTitle_ThenReturnTitleOrUnknown(string name, string title)
         {
             // Arrange
-            var searchResult = new ImdbSearch.Root()
+            var searchResult = new ImdbSearch.Root
             {
-                results = new List<ImdbSearch.Result>()
+                results = new List<ImdbSearch.Result>
                 {
                     new()
                     {
@@ -32,15 +31,9 @@ namespace IMDb_Chatbot.Tests.Unit_Tests.Services
             var result = SetCardValues.SetTitle(searchResult, 0, "Unknown");
 
             // Assert
-            if (name is null && title is null)
-            {
-                Assert.Equal("Unknown", result);
-            }
+            if (name is null && title is null) Assert.Equal("Unknown", result);
 
-            if (name is not null || title is not null)
-            {
-                Assert.Equal("Avengers", result);
-            }
+            if (name is not null || title is not null) Assert.Equal("Avengers", result);
         }
 
         [Theory]
@@ -49,11 +42,11 @@ namespace IMDb_Chatbot.Tests.Unit_Tests.Services
         public void GivenSetFilmId_ThenReturnIdOrUnknown(string id)
         {
             // Arrange
-            var searchResult = new ImdbSearch.Root()
+            var searchResult = new ImdbSearch.Root
             {
-                results = new List<ImdbSearch.Result>()
+                results = new List<ImdbSearch.Result>
                 {
-                    new ImdbSearch.Result()
+                    new()
                     {
                         id = id
                     }
@@ -75,26 +68,23 @@ namespace IMDb_Chatbot.Tests.Unit_Tests.Services
             // Arrange
             var searchResult = new ImdbSearch.Root();
             if (url is not null)
-            {
-                searchResult = new ImdbSearch.Root()
+                searchResult = new ImdbSearch.Root
                 {
-                    results = new List<ImdbSearch.Result>()
+                    results = new List<ImdbSearch.Result>
                     {
                         new()
                         {
-                            image = new ImdbSearch.Image()
+                            image = new ImdbSearch.Image
                             {
                                 url = url
                             }
                         }
                     }
                 };
-            }
             else
-            {
-                searchResult = new ImdbSearch.Root()
+                searchResult = new ImdbSearch.Root
                 {
-                    results = new List<ImdbSearch.Result>()
+                    results = new List<ImdbSearch.Result>
                     {
                         new()
                         {
@@ -102,7 +92,6 @@ namespace IMDb_Chatbot.Tests.Unit_Tests.Services
                         }
                     }
                 };
-            }
 
             // Act
             var result = SetCardValues.SetImageUrl(searchResult, 0,
@@ -121,9 +110,9 @@ namespace IMDb_Chatbot.Tests.Unit_Tests.Services
         public void GivenSetType_ThenReturnTypeOrUnknown(string type)
         {
             // Arrange
-            var searchResult = new ImdbSearch.Root()
+            var searchResult = new ImdbSearch.Root
             {
-                results = new List<ImdbSearch.Result>()
+                results = new List<ImdbSearch.Result>
                 {
                     new()
                     {
@@ -145,9 +134,9 @@ namespace IMDb_Chatbot.Tests.Unit_Tests.Services
         public void GivenSetMinutes_ThenReturnMinutesOrUnknown(string minutes)
         {
             // Arrange
-            var searchResult = new ImdbSearch.Root()
+            var searchResult = new ImdbSearch.Root
             {
-                results = new List<ImdbSearch.Result>()
+                results = new List<ImdbSearch.Result>
                 {
                     new()
                     {
@@ -169,9 +158,9 @@ namespace IMDb_Chatbot.Tests.Unit_Tests.Services
         public void GivenSetRating_ThenReturnRatingOrUnknown(string year)
         {
             // Arrange
-            var searchResult = new ImdbSearch.Root()
+            var searchResult = new ImdbSearch.Root
             {
-                results = new List<ImdbSearch.Result>()
+                results = new List<ImdbSearch.Result>
                 {
                     new()
                     {
@@ -193,9 +182,9 @@ namespace IMDb_Chatbot.Tests.Unit_Tests.Services
         public void GivenSetYear_ThenReturnYearOrUnknown(string year)
         {
             // Arrange
-            var searchResult = new ImdbSearch.Root()
+            var searchResult = new ImdbSearch.Root
             {
-                results = new List<ImdbSearch.Result>()
+                results = new List<ImdbSearch.Result>
                 {
                     new()
                     {
@@ -217,9 +206,9 @@ namespace IMDb_Chatbot.Tests.Unit_Tests.Services
         public void GivenSetPlot_ThenReturnPlotOrNull(string plot)
         {
             // Arrange
-            var searchResult = new ImdbSearch.Root()
+            var searchResult = new ImdbSearch.Root
             {
-                results = new List<ImdbSearch.Result>()
+                results = new List<ImdbSearch.Result>
                 {
                     new()
                     {
@@ -244,14 +233,13 @@ namespace IMDb_Chatbot.Tests.Unit_Tests.Services
             var searchResult = new ImdbSearch.Root();
 
             if (actors is not null)
-            {
-                searchResult = new ImdbSearch.Root()
+                searchResult = new ImdbSearch.Root
                 {
-                    results = new List<ImdbSearch.Result>()
+                    results = new List<ImdbSearch.Result>
                     {
                         new()
                         {
-                            principals = new List<ImdbSearch.Principal>()
+                            principals = new List<ImdbSearch.Principal>
                             {
                                 new()
                                 {
@@ -269,12 +257,10 @@ namespace IMDb_Chatbot.Tests.Unit_Tests.Services
                         }
                     }
                 };
-            }
             else
-            {
-                searchResult = new ImdbSearch.Root()
+                searchResult = new ImdbSearch.Root
                 {
-                    results = new List<ImdbSearch.Result>()
+                    results = new List<ImdbSearch.Result>
                     {
                         new()
                         {
@@ -282,7 +268,6 @@ namespace IMDb_Chatbot.Tests.Unit_Tests.Services
                         }
                     }
                 };
-            }
 
             // Act
             var result = SetCardValues.SetActors(searchResult, 0, "Unknown");
@@ -298,9 +283,9 @@ namespace IMDb_Chatbot.Tests.Unit_Tests.Services
         public void GivenSetGenre_ThenReturnGenreOrUnknown(string genre)
         {
             // Arrange
-            var searchResult = new ImdbSearch.Root()
+            var searchResult = new ImdbSearch.Root
             {
-                results = new List<ImdbSearch.Result>()
+                results = new List<ImdbSearch.Result>
                 {
                     new()
                     {
@@ -322,9 +307,9 @@ namespace IMDb_Chatbot.Tests.Unit_Tests.Services
         public void GivenSetName_ThenReturnNameOrUnknown(string name)
         {
             // Arrange
-            var searchResult = new ImdbSearch.Root()
+            var searchResult = new ImdbSearch.Root
             {
-                results = new List<ImdbSearch.Result>()
+                results = new List<ImdbSearch.Result>
                 {
                     new()
                     {
@@ -348,10 +333,9 @@ namespace IMDb_Chatbot.Tests.Unit_Tests.Services
             // Arrange
             var searchResult = new ImdbSearch.Root();
             if (actorRank is not 0)
-            {
-                searchResult = new ImdbSearch.Root()
+                searchResult = new ImdbSearch.Root
                 {
-                    results = new List<ImdbSearch.Result>()
+                    results = new List<ImdbSearch.Result>
                     {
                         new()
                         {
@@ -359,12 +343,10 @@ namespace IMDb_Chatbot.Tests.Unit_Tests.Services
                         }
                     }
                 };
-            }
             else
-            {
-                searchResult = new ImdbSearch.Root()
+                searchResult = new ImdbSearch.Root
                 {
-                    results = new List<ImdbSearch.Result>()
+                    results = new List<ImdbSearch.Result>
                     {
                         new()
                         {
@@ -372,7 +354,6 @@ namespace IMDb_Chatbot.Tests.Unit_Tests.Services
                         }
                     }
                 };
-            }
 
             // Act
             var result = SetCardValues.SetRank(searchResult, 0, rank);
@@ -387,9 +368,9 @@ namespace IMDb_Chatbot.Tests.Unit_Tests.Services
         public void GivenSetBio_ThenReturnBioOrUnknown(string bio)
         {
             // Arrange
-            var searchResult = new ImdbSearch.Root()
+            var searchResult = new ImdbSearch.Root
             {
-                results = new List<ImdbSearch.Result>()
+                results = new List<ImdbSearch.Result>
                 {
                     new()
                     {
@@ -411,9 +392,9 @@ namespace IMDb_Chatbot.Tests.Unit_Tests.Services
         public void GivenSetBirthDate_ThenReturnBirthDateOrNull(string born)
         {
             // Arrange
-            var searchResult = new ImdbSearch.Root()
+            var searchResult = new ImdbSearch.Root
             {
-                results = new List<ImdbSearch.Result>()
+                results = new List<ImdbSearch.Result>
                 {
                     new()
                     {
@@ -439,10 +420,9 @@ namespace IMDb_Chatbot.Tests.Unit_Tests.Services
             var searchResult = new ImdbSearch.Root();
 
             if (movies is null)
-            {
-                searchResult = new ImdbSearch.Root()
+                searchResult = new ImdbSearch.Root
                 {
-                    results = new List<ImdbSearch.Result>()
+                    results = new List<ImdbSearch.Result>
                     {
                         new()
                         {
@@ -450,16 +430,14 @@ namespace IMDb_Chatbot.Tests.Unit_Tests.Services
                         }
                     }
                 };
-            }
             else
-            {
-                searchResult = new ImdbSearch.Root()
+                searchResult = new ImdbSearch.Root
                 {
-                    results = new List<ImdbSearch.Result>()
+                    results = new List<ImdbSearch.Result>
                     {
                         new()
                         {
-                            knownFor = new List<ImdbSearch.KnownFor>()
+                            knownFor = new List<ImdbSearch.KnownFor>
                             {
                                 new()
                                 {
@@ -473,7 +451,6 @@ namespace IMDb_Chatbot.Tests.Unit_Tests.Services
                         }
                     }
                 };
-            }
 
             // Act
             var result = SetCardValues.SetKnownFor(searchResult, 0, "Unknown");
@@ -488,9 +465,9 @@ namespace IMDb_Chatbot.Tests.Unit_Tests.Services
         public void GivenSetRealName_ThenReturnRealNameOrNull(string name)
         {
             // Arrange
-            var searchResult = new ImdbSearch.Root()
+            var searchResult = new ImdbSearch.Root
             {
-                results = new List<ImdbSearch.Result>()
+                results = new List<ImdbSearch.Result>
                 {
                     new()
                     {

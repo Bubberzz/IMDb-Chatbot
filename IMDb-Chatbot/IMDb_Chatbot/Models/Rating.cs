@@ -174,49 +174,44 @@ namespace IMDb_Chatbot.Models
         {
             public Males Males { get; set; }
 
-            [JsonProperty("FemalesAged30-44")]
-            public FemalesAged3044 FemalesAged3044 { get; set; }
+            [JsonProperty("FemalesAged30-44")] public FemalesAged3044 FemalesAged3044 { get; set; }
 
-            [JsonProperty("MalesAged45+")]
-            public MalesAged45 MalesAged45 { get; set; }
+            [JsonProperty("MalesAged45+")] public MalesAged45 MalesAged45 { get; set; }
+
             public Agedunder18 Agedunder18 { get; set; }
 
-            [JsonProperty("Aged18-29")]
-            public Aged1829 Aged1829 { get; set; }
+            [JsonProperty("Aged18-29")] public Aged1829 Aged1829 { get; set; }
+
             public FemalesAgedunder18 FemalesAgedunder18 { get; set; }
             public IMDbUsers IMDbUsers { get; set; }
 
-            [JsonProperty("FemalesAged45+")]
-            public FemalesAged45 FemalesAged45 { get; set; }
+            [JsonProperty("FemalesAged45+")] public FemalesAged45 FemalesAged45 { get; set; }
+
             public Females Females { get; set; }
             public IMDbStaff IMDbStaff { get; set; }
             public MalesAgedunder18 MalesAgedunder18 { get; set; }
 
-            [JsonProperty("Aged45+")]
-            public Aged45 Aged45 { get; set; }
+            [JsonProperty("Aged45+")] public Aged45 Aged45 { get; set; }
+
             public Top1000voters Top1000voters { get; set; }
 
-            [JsonProperty("FemalesAged18-29")]
-            public FemalesAged1829 FemalesAged1829 { get; set; }
+            [JsonProperty("FemalesAged18-29")] public FemalesAged1829 FemalesAged1829 { get; set; }
 
-            [JsonProperty("MalesAged30-44")]
-            public MalesAged3044 MalesAged3044 { get; set; }
+            [JsonProperty("MalesAged30-44")] public MalesAged3044 MalesAged3044 { get; set; }
 
-            [JsonProperty("MalesAged18-29")]
-            public MalesAged1829 MalesAged1829 { get; set; }
+            [JsonProperty("MalesAged18-29")] public MalesAged1829 MalesAged1829 { get; set; }
+
             public USusers USusers { get; set; }
 
-            [JsonProperty("Non-USusers")]
-            public NonUSusers NonUSusers { get; set; }
+            [JsonProperty("Non-USusers")] public NonUSusers NonUSusers { get; set; }
 
-            [JsonProperty("Aged30-44")]
-            public Aged3044 Aged3044 { get; set; }
+            [JsonProperty("Aged30-44")] public Aged3044 Aged3044 { get; set; }
         }
 
         public class RatingRoot
         {
-            [JsonProperty("@type")]
-            public string Type { get; set; }
+            [JsonProperty("@type")] public string Type { get; set; }
+
             public string id { get; set; }
             public string title { get; set; }
             public string titleType { get; set; }
@@ -228,7 +223,5 @@ namespace IMDb_Chatbot.Models
             public RatingsHistograms ratingsHistograms { get; set; }
             public int topRank { get; set; }
         }
-
-
     }
 }

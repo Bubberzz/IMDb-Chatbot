@@ -23,19 +23,21 @@ namespace IMDb_Chatbot.Tests.Integration_Tests.Controllers
             var mockHttpContext = new Mock<HttpContext>();
             mockHttpContext.Setup(x => x.Request).Returns(request.Object);
             mockHttpContext.Setup(x => x.Response).Returns(response.Object);
-            var actionContext = new ActionContext(mockHttpContext.Object, new RouteData(), new ControllerActionDescriptor());
+            var actionContext =
+                new ActionContext(mockHttpContext.Object, new RouteData(), new ControllerActionDescriptor());
 
             // Create BF mocks
             var mockAdapter = new Mock<IBotFrameworkHttpAdapter>();
             mockAdapter
-                .Setup(x => x.ProcessAsync(It.IsAny<HttpRequest>(), It.IsAny<HttpResponse>(), It.IsAny<IBot>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.ProcessAsync(It.IsAny<HttpRequest>(), It.IsAny<HttpResponse>(), It.IsAny<IBot>(),
+                    It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
             var mockBot = new Mock<IBot>();
 
             // Create and initialize controller
             var sut = new BotController(mockAdapter.Object, mockBot.Object)
             {
-                ControllerContext = new ControllerContext(actionContext),
+                ControllerContext = new ControllerContext(actionContext)
             };
 
             // Invoke the controller
