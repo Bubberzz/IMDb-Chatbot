@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
@@ -52,7 +53,7 @@ namespace IMDb_Chatbot.Dialogs
         private async Task<DialogTurnResult> SelectOptionAsync(WaterfallStepContext stepContext,
             CancellationToken cancellationToken)
         {
-            if (stepContext.Context.Activity.Text == "Options")
+            if (stepContext.Context.Activity.Text.IndexOf("Options", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 var options = new PromptOptions()
                 {
@@ -161,7 +162,7 @@ namespace IMDb_Chatbot.Dialogs
                 default:
                 {
                     if (stepContext.Context.Activity.Text != null &&
-                        stepContext.Context.Activity.Text.Contains("recommend"))
+                        stepContext.Context.Activity.Text.IndexOf("recommend", StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         await stepContext.Context.SendActivityAsync(
                             MessageFactory.Text(
