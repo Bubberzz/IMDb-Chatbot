@@ -1,21 +1,21 @@
 using System;
-using Microsoft.Bot.Builder;
-using Microsoft.Bot.Builder.Dialogs;
-using Microsoft.Bot.Schema;
-using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using IMDb_Chatbot.Interfaces;
 using IMDb_Chatbot.Services;
+using Microsoft.Bot.Builder;
+using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Dialogs.Choices;
+using Microsoft.Bot.Schema;
+using Microsoft.Extensions.Logging;
 
 namespace IMDb_Chatbot.Dialogs
 {
     public class MainDialog : ComponentDialog
     {
+        private readonly IImdbService _imdbService;
         protected readonly ILogger _logger;
-        private IImdbService _imdbService;
         private string _recommendMovie;
 
         // Dependency injection uses this constructor to instantiate MainDialog
@@ -43,7 +43,7 @@ namespace IMDb_Chatbot.Dialogs
             {
                 SelectOptionAsync,
                 ReturnResultCard,
-                FinalStepAsync,
+                FinalStepAsync
             }));
 
             // The initial child Dialog to run.
@@ -53,14 +53,15 @@ namespace IMDb_Chatbot.Dialogs
         private async Task<DialogTurnResult> SelectOptionAsync(WaterfallStepContext stepContext,
             CancellationToken cancellationToken)
         {
-            if (stepContext.Context.Activity.Text.IndexOf("Options", StringComparison.OrdinalIgnoreCase) >= 0)
+            if (stepContext.Context.Activity.Text is not null &&
+                stepContext.Context.Activity.Text.IndexOf("Options", StringComparison.OrdinalIgnoreCase) >= 0)
             {
-                var options = new PromptOptions()
+                var options = new PromptOptions
                 {
                     Prompt = MessageFactory.Text("Pick one of the following options"),
                     RetryPrompt =
                         MessageFactory.Text("That was not a valid choice, please one of the below options."),
-                    Choices = GetChoices(),
+                    Choices = GetChoices()
                 };
 
                 // Prompt the user with the configured PromptOptions.
@@ -85,7 +86,7 @@ namespace IMDb_Chatbot.Dialogs
                         MessageFactory.Text("Generating a personalised recommendation.."), cancellationToken);
                     Thread.Sleep(10500);
                     var card = Cards.GetRickAstleyCard();
-                    var reply = MessageFactory.Attachment(new List<Attachment>()
+                    var reply = MessageFactory.Attachment(new List<Attachment>
                     {
                         card.ToAttachment()
                     });
@@ -94,7 +95,6 @@ namespace IMDb_Chatbot.Dialogs
                         MessageFactory.Text("I think you would like this movie."), cancellationToken);
                     await stepContext.Context.SendActivityAsync(reply, cancellationToken);
                     return await stepContext.NextAsync(null, cancellationToken);
-
                 }
                 case "Yes" when UserResponse.UserResponseNegative().Contains(stepContext.Context.Activity.Text):
                 {
@@ -105,7 +105,6 @@ namespace IMDb_Chatbot.Dialogs
 
             // Create a response based on the options user selected in previous step
             if (stepContext.Result is not null)
-            {
                 switch (((FoundChoice) stepContext.Result).Value)
                 {
                     case "Top rated movies":
@@ -123,7 +122,6 @@ namespace IMDb_Chatbot.Dialogs
                         return await stepContext.BeginDialogAsync(nameof(MovieRouletteDialog),
                             new MovieRouletteDialog(_imdbService), cancellationToken);
                 }
-            }
 
             // Create a response based on activity received from user
             switch (stepContext.Context.Activity.Value)
@@ -191,12 +189,15 @@ namespace IMDb_Chatbot.Dialogs
 
         private static IList<Choice> GetChoices()
         {
-            var cardOptions = new List<Choice>()
+            var cardOptions = new List<Choice>
             {
-                new() {Value = "Top rated movies", Synonyms = new List<string>() {"rated movies", "1"}},
-                new() {Value = "Top rated actors", Synonyms = new List<string>() {"actor", "actors", "rated actors", "2"}},
-                new() {Value = "Coming soon movies", Synonyms = new List<string>() {"coming", "soon", "3"}},
-                new() {Value = "IMDb Roulette", Synonyms = new List<string>() {"roulette", "imdb", "4"}},
+                new() {Value = "Top rated movies", Synonyms = new List<string> {"rated movies", "1"}},
+                new()
+                {
+                    Value = "Top rated actors", Synonyms = new List<string> {"actor", "actors", "rated actors", "2"}
+                },
+                new() {Value = "Coming soon movies", Synonyms = new List<string> {"coming", "soon", "3"}},
+                new() {Value = "IMDb Roulette", Synonyms = new List<string> {"roulette", "imdb", "4"}}
             };
             return cardOptions;
         }

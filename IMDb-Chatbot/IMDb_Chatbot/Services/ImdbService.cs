@@ -22,26 +22,29 @@ namespace IMDb_Chatbot.Services
         {
             var client = new HttpClient();
             var request = CreateRequest("https://imdb8.p.rapidapi.com/title/find?q=" + search);
-            using var response = await client.SendAsync(request);
-            response.EnsureSuccessStatusCode();
-            var body = await response.Content.ReadAsStringAsync();
+            string body;
+            try
+            {
+                using var response = await client.SendAsync(request);
+                response.EnsureSuccessStatusCode();
+                body = await response.Content.ReadAsStringAsync();
+            }
+            catch
+            {
+                return new ImdbSearch.Root();
+            }
+
             var deserializedBody = JsonConvert.DeserializeObject<ImdbSearch.Root>(body);
 
             // If null, return to calling function where it will be handled
-            if (deserializedBody.results is null)
-            {
-                return deserializedBody;
-            }
+            if (deserializedBody.results is null) return deserializedBody;
 
             // We only want 5 or less results, api typically brings back 20
-            if (deserializedBody.results.Count < 5)
-            {
-                return deserializedBody;
-            }
+            if (deserializedBody.results.Count < 5) return deserializedBody;
 
-            var reducedResultsList = new ImdbSearch.Root()
+            var reducedResultsList = new ImdbSearch.Root
             {
-                results = new List<ImdbSearch.Result>()
+                results = new List<ImdbSearch.Result>
                 {
                     new(),
                     new(),
@@ -50,10 +53,7 @@ namespace IMDb_Chatbot.Services
                     new()
                 }
             };
-            for (var i = 0; i < 5; i++)
-            {
-                reducedResultsList.results[i] = deserializedBody.results[i];
-            }
+            for (var i = 0; i < 5; i++) reducedResultsList.results[i] = deserializedBody.results[i];
             return reducedResultsList;
         }
 
@@ -145,8 +145,9 @@ namespace IMDb_Chatbot.Services
             foreach (var item in deserializedBody)
             {
                 rating += 1;
-                result.Add(new TopRatedActors.Root() {id = item, chartRating = rating});
+                result.Add(new TopRatedActors.Root {id = item, chartRating = rating});
             }
+
             return result;
         }
 
@@ -172,8 +173,8 @@ namespace IMDb_Chatbot.Services
                 Headers =
                 {
                     {"x-rapidapi-key", _configuration["APIKey"]},
-                    {"x-rapidapi-host", _configuration["APIHost"]},
-                },
+                    {"x-rapidapi-host", _configuration["APIHost"]}
+                }
             };
             return request;
         }

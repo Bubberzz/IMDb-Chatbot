@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using IMDb_Chatbot.Interfaces;
 using IMDb_Chatbot.Models;
 
@@ -17,15 +18,15 @@ namespace IMDb_Chatbot.Services
         {
             // get plot and assign to film object
             var plot = await _imdbService.GetPlot(resultId);
-            response.results[i].plot = plot.plots.Count != 0 ? plot.plots[0].text : "";
+            response.results[i].plot = plot.plots.Count != 0 ? plot.plots[0].text : "Unknown";
 
             // get rating and assign to film object
             var rating = await _imdbService.GetRating(resultId);
-            response.results[i].rating = rating.rating ?? "";
+            response.results[i].rating = rating.rating ?? "Unknown";
 
             // get genre and assign to film object
             var genre = await _imdbService.GetGenre(resultId);
-            response.results[i].genre = genre != null ? genre[0] : "";
+            response.results[i].genre = genre != null ? genre.Any() ? genre[0] : "Unknown" : "Unknown";
         }
     }
 }

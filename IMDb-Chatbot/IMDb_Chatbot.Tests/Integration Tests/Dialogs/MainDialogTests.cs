@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using IMDb_Chatbot.Dialogs;
 using IMDb_Chatbot.Interfaces;
@@ -18,14 +18,14 @@ namespace IMDb_Chatbot.Tests.Integration_Tests.Dialogs
 {
     public class MainDialogTests : BotTestBase
     {
-        private readonly TopRatedMoviesDialog _mockTopRatedMoviesDialog;
-        private readonly TopRatedActorsDialog _mockTopRatedActorsDialog;
         private readonly ComingSoonMoviesDialog _mockComingSoonMoviesDialog;
-        private readonly MovieRouletteDialog _mockMovieRouletteDialog;
         private readonly ImdbSearchDialog _mockImdbSearchDialog;
         private readonly IImdbService _mockImdbService;
         private readonly Mock<ILogger<MainDialog>> _mockLogger;
-      
+        private readonly MovieRouletteDialog _mockMovieRouletteDialog;
+        private readonly TopRatedActorsDialog _mockTopRatedActorsDialog;
+        private readonly TopRatedMoviesDialog _mockTopRatedMoviesDialog;
+
         public MainDialogTests(ITestOutputHelper output)
             : base(output)
         {
@@ -43,15 +43,17 @@ namespace IMDb_Chatbot.Tests.Integration_Tests.Dialogs
         public async Task WhenUserRequestsOptions_ThenReturnOptions()
         {
             // Arrange
-            var sut = new MainDialog(_mockTopRatedMoviesDialog, _mockTopRatedActorsDialog, _mockComingSoonMoviesDialog, _mockMovieRouletteDialog, 
+            var sut = new MainDialog(_mockTopRatedMoviesDialog, _mockTopRatedActorsDialog, _mockComingSoonMoviesDialog,
+                _mockMovieRouletteDialog,
                 _mockImdbSearchDialog, _mockLogger.Object, _mockImdbService);
 
             // Act
             var testClient = new DialogTestClient(Channels.Msteams, sut);
-            
+
             // Assert
             var reply = await testClient.SendActivityAsync<IMessageActivity>("Options");
-            Assert.Equal("Pick one of the following options\n\n   1. Top rated movies\n   2. Top rated actors\n   3. Coming soon movies\n   4. IMDb Roulette",
+            Assert.Equal(
+                "Pick one of the following options\n\n   1. Top rated movies\n   2. Top rated actors\n   3. Coming soon movies\n   4. IMDb Roulette",
                 reply.Text);
         }
 
@@ -75,19 +77,25 @@ namespace IMDb_Chatbot.Tests.Integration_Tests.Dialogs
             {
                 Title = "The Shawshank Redemption",
                 Subtitle = "Tim Robbins, Morgan Freeman, Bob Gunton",
-                Text = "Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.\r\n Year: 1994 | Rating: 9.3 | Genre: Drama | Minutes: 142 | Type: movie",
-                Images = new List<CardImage> { new CardImage("https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNTEtODM1ZmRlYWMwMWFmXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_.jpg") },
+                Text =
+                    "Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.\r\n Year: 1994 | Rating: 9.3 | Genre: Drama | Minutes: 142 | Type: movie",
+                Images = new List<CardImage>
+                {
+                    new(
+                        "https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNTEtODM1ZmRlYWMwMWFmXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_.jpg")
+                },
                 Buttons = new List<CardAction>
                 {
                     new(ActionTypes.OpenUrl, "Open IMDb",
                         value: "https://www.imdb.com/title/tt0111161/"),
                     new(ActionTypes.MessageBack, "More Results",
                         value: "Show More: Movie Results")
-                },
+                }
             };
 
             // Act
-            var sut = new MainDialog(_mockTopRatedMoviesDialog, _mockTopRatedActorsDialog, _mockComingSoonMoviesDialog, _mockMovieRouletteDialog,
+            var sut = new MainDialog(_mockTopRatedMoviesDialog, _mockTopRatedActorsDialog, _mockComingSoonMoviesDialog,
+                _mockMovieRouletteDialog,
                 _mockImdbSearchDialog, _mockLogger.Object, mock.Object);
             var testClient = new DialogTestClient(Channels.Msteams, sut);
 
@@ -124,7 +132,8 @@ namespace IMDb_Chatbot.Tests.Integration_Tests.Dialogs
                 .Returns(Task.FromResult(data.Genre));
 
             // Act
-            var sut = new MainDialog(_mockTopRatedMoviesDialog, _mockTopRatedActorsDialog, _mockComingSoonMoviesDialog, _mockMovieRouletteDialog,
+            var sut = new MainDialog(_mockTopRatedMoviesDialog, _mockTopRatedActorsDialog, _mockComingSoonMoviesDialog,
+                _mockMovieRouletteDialog,
                 _mockImdbSearchDialog, _mockLogger.Object, mock.Object);
             var testClient = new DialogTestClient(Channels.Msteams, sut);
 
@@ -166,17 +175,23 @@ namespace IMDb_Chatbot.Tests.Integration_Tests.Dialogs
             {
                 Title = "Sophia Di Martino",
                 Subtitle = "IMDb rank: 2",
-                Text = " was born on 15 January 1983 in Nottingham, Nottinghamshire, England, UK\r\nSophia Di Martino was born on November 15, 1983 in Nottingham, Nottinghamshire, England. She is an actress and director, known for Flowers (2016), Loki (2021) and Yesterday (2019).\r\n Known for: Flowers, Loki, Yesterday, Into the Badlands\r\n",
-                Images = new List<CardImage> { new("https://m.media-amazon.com/images/M/MV5BYjk4YmMyOWYtMzlhZS00Yjg4LTk0NjQtNDdmMmViMzk3MDZhXkEyXkFqcGdeQXVyMjQwMDg0Ng@@._V1_.jpg") },
+                Text =
+                    "Sophia Di Martino was born on 15 January 1983 in Nottingham, Nottinghamshire, England, UK\r\nSophia Di Martino was born on November 15, 1983 in Nottingham, Nottinghamshire, England. She is an actress and director, known for Flowers (2016), Loki (2021) and Yesterday (2019).\r\n Known for: Flowers, Loki, Yesterday, Into the Badlands\r\n",
+                Images = new List<CardImage>
+                {
+                    new(
+                        "https://m.media-amazon.com/images/M/MV5BYjk4YmMyOWYtMzlhZS00Yjg4LTk0NjQtNDdmMmViMzk3MDZhXkEyXkFqcGdeQXVyMjQwMDg0Ng@@._V1_.jpg")
+                },
                 Buttons = new List<CardAction>
                 {
                     new(ActionTypes.OpenUrl, "Open IMDb",
                         value: "https://www.imdb.com/name/nm1620545/")
-                },
+                }
             };
 
             // Act
-            var sut = new MainDialog(_mockTopRatedMoviesDialog, _mockTopRatedActorsDialog, _mockComingSoonMoviesDialog, _mockMovieRouletteDialog,
+            var sut = new MainDialog(_mockTopRatedMoviesDialog, _mockTopRatedActorsDialog, _mockComingSoonMoviesDialog,
+                _mockMovieRouletteDialog,
                 _mockImdbSearchDialog, _mockLogger.Object, mock.Object);
             var testClient = new DialogTestClient(Channels.Msteams, sut);
 

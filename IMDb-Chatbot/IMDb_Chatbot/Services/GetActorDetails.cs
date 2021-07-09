@@ -18,7 +18,7 @@ namespace IMDb_Chatbot.Services
         {
             // get actor bio
             var bio = await _imdbService.GetBio(resultId);
-            response.results[i].bio = bio.miniBios != null ? bio.miniBios[0].text : "";
+            response.results[i].bio = bio.miniBios != null ? bio.miniBios[0].text : "Unknown";
 
             // set birth date info
             if (bio.birthDate is not null)
@@ -42,7 +42,7 @@ namespace IMDb_Chatbot.Services
             }
 
             // set real name
-            response.results[i].realName = bio.realName ?? "";
+            response.results[i].realName = bio.realName ?? response.results[0].name;
 
             // get actor rank
             var rank = await _imdbService.AutoComplete(response.results[0].name);
