@@ -193,8 +193,7 @@ namespace IMDb_Chatbot.Dialogs
             var cardOptions = new List<Choice>()
             {
                 new() {Value = "Top rated movies", Synonyms = new List<string>() {"rated movies", "1"}},
-                new()
-                    {Value = "Top rated actors", Synonyms = new List<string>() {"actor", "actors", "rated actors", "2"}},
+                new() {Value = "Top rated actors", Synonyms = new List<string>() {"actor", "actors", "rated actors", "2"}},
                 new() {Value = "Coming soon movies", Synonyms = new List<string>() {"coming", "soon", "3"}},
                 new() {Value = "IMDb Roulette", Synonyms = new List<string>() {"roulette", "imdb", "4"}},
             };
